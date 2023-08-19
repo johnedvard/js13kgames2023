@@ -14,12 +14,13 @@ export class MySvg extends EngineObject {
   public path: string;
   public stroke: string;
   public fill: string;
-
+  public pos: vec2;
+  public velocity: vec2;
   public cmds: Cmd[];
   public current2DPath: { path?: string; path2D?: Path2D } = {};
+
   private children: MySvg[] = [];
   private intersectionPoints: IntersectionPoint[] = [];
-
   // TODO constructor override if we want to use cmd instead of path?
   constructor(
     path: string,
@@ -31,6 +32,7 @@ export class MySvg extends EngineObject {
     size: vec2 = vec2(1, 1)
   ) {
     super(pos, size);
+    this.pos = pos;
     this.path = path;
     this.stroke = stroke;
     this.fill = fill;
