@@ -1,4 +1,4 @@
-import { vec2 } from 'littlejsengine/build/littlejs.esm';
+import { vec2 } from 'littlejsengine/build/littlejs.esm.min';
 
 import { splitCubicCurve } from './splitCubicCurve';
 import { Cmd } from './types/Cmd';
@@ -8,9 +8,8 @@ import { translateCoordinates } from './translateCoordinates';
 
 export function createNewSvgs(svg: MySvg, p: IntersectionPoint): MySvg[] {
   if (!svg || !p) return [];
-  const newSvg1 = new MySvg(null, svg.cmds, 'red', 'red', svg.pos.copy().add(vec2(0, 0)));
-  const newSvg2 = new MySvg(null, svg.cmds, 'gray', 'gray', svg.pos.copy().add(vec2(0, 0)));
-  console.log('newSvg2', newSvg2);
+  const newSvg1 = new MySvg(null, svg.cmds, 'red', 'red', svg.pos.copy().add(vec2(0, 0)), svg.velocity);
+  const newSvg2 = new MySvg(null, svg.cmds, 'gray', 'gray', svg.pos.copy().add(vec2(0, 0), svg.velocity));
 
   const cmd: Cmd = svg.cmds[p.id];
   if (!cmd) return;

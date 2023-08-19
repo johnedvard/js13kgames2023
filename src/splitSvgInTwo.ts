@@ -15,7 +15,6 @@ export function splitSvgInTwo(svgs: MySvg[]) {
   // part 1 split
   const svg = svgs[0];
   const intersectionIndex = svg.cmds.findIndex((cmd) => cmd.isIntersectionPoint);
-  console.log('intersectionIndex', intersectionIndex);
   const moveToCmd: Cmd = {
     x: svg.cmds[intersectionIndex].x0,
     y: svg.cmds[intersectionIndex].y0,

@@ -7,7 +7,7 @@ import { IntersectionPoint } from './types/IntersectionPoint';
 import { MySvg } from './MySvg';
 
 export function containsUniqueIntersectionPoint(points: IntersectionPoint[], newPoint: vec2) {
-  const tolerance = 1; // ignore points that are close enough to p
+  const tolerance = 3; // ignore points that are close enough to p
   let containsPoint = false;
   for (let existingPoint of points) {
     if (Math.abs(existingPoint.intersectionPoint.x - newPoint.x) <= tolerance) containsPoint = true;
@@ -18,7 +18,7 @@ export function containsUniqueIntersectionPoint(points: IntersectionPoint[], new
 }
 
 export function containsUniquePoint(points: vec2[], newPoint: vec2) {
-  const tolerance = 1; // ignore points that are close enough to p
+  const tolerance = 3; // ignore points that are close enough to p
   let isUniquePoint = true;
   for (let existingPoint of points) {
     if (Math.abs(existingPoint.x - newPoint.x) >= tolerance) isUniquePoint = false;

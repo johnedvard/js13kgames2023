@@ -1,4 +1,4 @@
-import { vec2 } from 'littlejsengine/build/littlejs.esm.min';
+import { vec2, EngineObject, gravity } from 'littlejsengine/build/littlejs.esm.min';
 
 import { parseSVG } from 'svg-path-parser';
 
@@ -10,12 +10,11 @@ import { createNewSvgs } from './createNewSvgs';
 import { splitCubicCurve } from './splitCubicCurve';
 import { splitSvgInTwo } from './splitSvgInTwo';
 
-export class MySvg {
+export class MySvg extends EngineObject {
   public path: string;
   public stroke: string;
   public fill: string;
-  public pos: vec2;
-  public size: vec2;
+
   public cmds: Cmd[];
   public current2DPath: { path?: string; path2D?: Path2D } = {};
   private children: MySvg[] = [];
@@ -28,26 +27,36 @@ export class MySvg {
     stroke: string,
     fill: string,
     pos: vec2 = vec2(0, 0),
-    size: vec2 = vec2(0, 0)
+    velocity: vec2 = vec2(0, 0),
+    size: vec2 = vec2(1, 1)
   ) {
+    super(pos, size);
     this.path = path;
     this.stroke = stroke;
     this.fill = fill;
-    this.pos = pos;
-    this.size = size;
+    this.velocity = velocity;
     if (this.path) {
       this.cmds = parseSVG(path);
       makeSvgPathCommandsAbsolute(this.cmds); // Note: mutates the commands in place!
       translateCoordinates(this.cmds, this.pos); // move the svg according to position
     } else if (cmds) {
-      console.log('create new with cmds', cmds);
       this.cmds = [...cmds];
     }
-    console.log('this.cmds before', this.cmds);
     this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
     this.current2DPath.path = this.getCmdsAsPathString();
   }
 
+  update() {
+    // console.log('pos update: ', this.velocity);
+    // console.log('pos update: ', this.pos);
+    const prevPos = vec2(this.pos.x, this.pos.y);
+    this.velocity.y += gravity;
+    this.pos.x += this.velocity.x;
+    this.pos.y += this.velocity.y;
+    translateCoordinates(this.cmds, prevPos.subtract(this.pos));
+    this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
+    this.current2DPath.path = this.getCmdsAsPathString();
+  }
   render(ctx) {
     if (!ctx) return;
     if (this.children.length) {
@@ -58,7 +67,7 @@ export class MySvg {
     ctx.beginPath(); // Start a new path
     ctx.strokeStyle = this.stroke || 'blue';
     ctx.fillStyle = this.fill || 'blue';
-    // // Only for debugging:
+    // Only for debugging:
     // this.cmds.forEach((c) => {
     //   if (!c) return;
     //   switch (c.code) {
@@ -86,7 +95,7 @@ export class MySvg {
     //   }
     // });
     ctx.fill(this.current2DPath.path2D);
-    // ctx.stroke(); // Render the path
+    ctx.stroke(); // Render the path
   }
 
   addCmds(start, deleteCount, cmds: Cmd[]) {
@@ -105,20 +114,17 @@ export class MySvg {
     if (this.intersectionPoints.length == 1) {
       const newSvg1 = new MySvg(null, this.cmds, 'yellow', 'yellow', this.pos.copy());
       // add the intersection point to the existing SVG, splitting the curve
-      this.intersectionPoints.forEach((p) => {
-        const cmd: Cmd = this.cmds[p.id];
-        if (!cmd) return;
-        if (cmd.code == 'C') {
-          this.stroke = 'pink';
-          this.fill = 'purple';
-          const newCurves2 = splitCubicCurve(cmd, p.intersectionPoint);
-          newCurves2[1].isIntersectionPoint = true;
+      const p = this.intersectionPoints[0];
+      const cmd: Cmd = this.cmds[p.id];
+      if (!cmd) return;
+      if (cmd.code == 'C') {
+        const newCurves2 = splitCubicCurve(cmd, p.intersectionPoint);
+        newCurves2[1].isIntersectionPoint = true;
 
-          translateCoordinates(newCurves2, newSvg1.pos.copy().multiply(vec2(-1, -1))); // translate the coordinates back to origin.
-          newSvg1.addCmds(p.id, 1, newCurves2);
-          this.setCmds(newSvg1.cmds);
-        }
-      });
+        translateCoordinates(newCurves2, newSvg1.pos.copy().multiply(vec2(-1, -1))); // translate the coordinates back to origin.
+        newSvg1.addCmds(p.id, 1, newCurves2);
+        this.setCmds(newSvg1.cmds);
+      }
     }
 
     if (this.intersectionPoints.length == 2) {

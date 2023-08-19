@@ -27,7 +27,6 @@ function _splitCubicCurve(
   y: number,
   t0: vec2
 ): Cmd[] {
-  console.log('t0', t0);
   const maxDepth = 7;
   const getUValue = (x0, y0, x1, y1, x2, y2, x, y, t0, depth = 0, u = 0.5) => {
     // try to subdivide the curve, and find a new point, tGuess, that is close enough to t0.
@@ -35,7 +34,7 @@ function _splitCubicCurve(
     // Use the convex hull property to discard curves where t0 does not exist.
     const [c1, c2] = subdivideCubicCurve(x0, y0, x1, y1, x2, y2, x, y, 0.5);
     if (depth == maxDepth) {
-      console.log('mac depth u', u);
+      console.log('max u-depth', u);
       return u;
       // return [c1, c2]; // the point is close enough to where we want to split the curve
     }
@@ -58,6 +57,5 @@ export function splitCubicCurve(c: Cmd, t0: vec2): Cmd[] {
     curve.code = c.code;
     curve.command = c.command;
   });
-  console.log('curves', curves);
   return curves;
 }

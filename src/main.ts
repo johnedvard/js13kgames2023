@@ -1,6 +1,5 @@
-import { vec2 } from 'littlejsengine/build/littlejs.esm';
+import { vec2, setGravity, engineInit, mainContext } from 'littlejsengine/build/littlejs.esm.min';
 
-import { engineInit, mainContext } from 'littlejsengine/build/littlejs.esm.min';
 import { drawTouchLine, updateMouseControls } from './inputUtils';
 import { MySvg } from './MySvg';
 import { handleLineCollisions, containsUniqueIntersectionPoint } from './handleLineCollisions';
@@ -13,17 +12,28 @@ let svgs = [];
 const somePath =
   'M121.092,0.717C146.847,3.02 163.476,37.537 168.534,79.245C177.602,154.02 149.482,251.907 70.092,228.717C-73.539,186.761 36.35,-6.863 121.092,0.717Z';
 function gameInit() {
-  const eggSvg = new MySvg(eggPath, null, 'blue', 'blue', vec2(111, 111));
+  setGravity(-0.01);
+
+  const eggSvg = new MySvg(eggPath, null, 'blue', 'blue', vec2(444, 444));
   const bambooSvg = new MySvg(bambooPath, null, 'green', 'green', vec2(222, 222));
-  const someSvg = new MySvg(somePath, null, 'orange', 'orange', vec2(333, 555));
-  svgs.push(eggSvg, bambooSvg, someSvg);
+  const bambooSvg1 = new MySvg(bambooPath, null, 'green', 'green', vec2(272, 232));
+  const bambooSvg2 = new MySvg(bambooPath, null, 'green', 'green', vec2(132, 252));
+  const bambooSvg3 = new MySvg(bambooPath, null, 'green', 'green', vec2(352, 200));
+
+  svgs.push(eggSvg, bambooSvg, bambooSvg1, bambooSvg2, bambooSvg3);
 }
 
 function gameUpdate() {
   updateMouseControls();
   svgs.forEach((svg) => {
+    svg.update();
     const intersectionPoints = handleLineCollisions(svg);
-    intersectionPoints.forEach((p) => {
+    if (intersectionPoints.length) {
+      console.log('intersectionPoints', intersectionPoints);
+    }
+    intersectionPoints.forEach((p, index) => {
+      // TODO (johnedvard) find a better way than this hack. Maybe assign ID's to cmds when they are created
+      p.id += index; // adding index, because the svg will increase the cmds with 1, after the first intersection is added
       if (!containsUniqueIntersectionPoint(svg.intersectionPoints, p.intersectionPoint)) {
         svg.addIntersectionPoint(p);
       }

@@ -4,7 +4,6 @@ export function makeSvgPathCommandsAbsolute(commands) {
     prevCmd = { x: 0, y: 0 };
   var attr = { x: 'x0', y: 'y0', x1: 'x0', y1: 'y0', x2: 'x0', y2: 'y0' };
   commands.forEach(function (cmd) {
-    console.log('cmd: ', cmd);
     if (cmd.command === 'moveto') subpathStart = cmd;
     cmd.x0 = prevCmd.x;
     cmd.y0 = prevCmd.y;
