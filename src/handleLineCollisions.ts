@@ -6,34 +6,43 @@ import { getLineIntersection } from './getLineIntersection';
 import { IntersectionPoint } from './types/IntersectionPoint';
 import { MySvg } from './MySvg';
 
-export function containsUniqueIntersectionPoint(points: IntersectionPoint[], newPoint: vec2) {
-  const tolerance = 3; // ignore points that are close enough to p
+export function containsUniqueIntersectionPoint(points: IntersectionPoint[], newPoint: IntersectionPoint) {
+  const tolerance = 15; // ignore points that are close enough to p
   let containsPoint = false;
   for (let existingPoint of points) {
-    if (Math.abs(existingPoint.intersectionPoint.x - newPoint.x) <= tolerance) containsPoint = true;
-    if (Math.abs(existingPoint.intersectionPoint.y - newPoint.y) <= tolerance) containsPoint = true;
+    if (
+      Math.abs(existingPoint.intersectionPoint.x - newPoint.intersectionPoint.x) <= tolerance &&
+      Math.abs(existingPoint.intersectionPoint.y - newPoint.intersectionPoint.y) <= tolerance
+    ) {
+      containsPoint = true;
+    }
+
     if (containsPoint) break;
   }
   return containsPoint;
 }
 
-export function containsUniquePoint(points: vec2[], newPoint: vec2) {
-  const tolerance = 3; // ignore points that are close enough to p
-  let isUniquePoint = true;
+export function containsUniquePoint(points: IntersectionPoint[], newPoint: vec2) {
+  const tolerance = 15; // ignore points that are close enough to p
+  let containsUniquePoint = false;
   for (let existingPoint of points) {
-    if (Math.abs(existingPoint.x - newPoint.x) >= tolerance) isUniquePoint = false;
-    if (Math.abs(existingPoint.y - newPoint.y) >= tolerance) isUniquePoint = false;
-    if (isUniquePoint) break;
+    if (
+      Math.abs(existingPoint.intersectionPoint.x - newPoint.x) <= tolerance &&
+      Math.abs(existingPoint.intersectionPoint.y - newPoint.y) <= tolerance
+    ) {
+      containsUniquePoint = true;
+    }
+    if (containsUniquePoint) break;
   }
-  return !isUniquePoint;
+  return containsUniquePoint;
 }
 /**
  * Handle all collisions for the svg object, making sure that all collisions that happen in the same function is the same object
  * We check against the line the mouse creates
  */
 export function handleLineCollisions(svg: MySvg): IntersectionPoint[] {
-  const intersectionPoints = []; // {id, point}, the id of the curve, and the point
-  svg.cmds.forEach((cmd, index) => {
+  const intersectionPoints: IntersectionPoint[] = []; // {id, point}, the id of the curve, and the point
+  svg.cmds.forEach((cmd) => {
     if (cmd.code === 'C') {
       const { x0, y0, x1, y1, x2, y2, x, y } = cmd;
       for (let i = 0; i < 0.99; i = i + 0.01) {
@@ -42,10 +51,10 @@ export function handleLineCollisions(svg: MySvg): IntersectionPoint[] {
         for (let i = 0; i < mousePoints.length - 1; i++) {
           const prev = mousePoints[i];
           const next = mousePoints[i + 1];
-          const intersectionPoint = getLineIntersection(prev, next, p1.t0, p2.t0);
+          const intersectionPoint: vec2 = getLineIntersection(prev, next, p1.t0, p2.t0);
           if (intersectionPoint) {
             if (!containsUniquePoint(intersectionPoints, intersectionPoint)) {
-              intersectionPoints.push({ id: index, intersectionPoint });
+              intersectionPoints.push({ id: cmd.id, intersectionPoint });
             }
           }
         }

@@ -1,6 +1,6 @@
 import { vec2, EngineObject, gravity } from 'littlejsengine/build/littlejs.esm.min';
 
-import { parseSVG } from 'svg-path-parser';
+import { parseSvg } from './parseSvg';
 
 import { makeSvgPathCommandsAbsolute } from './makeSvgPathCommandsAbsolute';
 import { Cmd } from './types/Cmd';
@@ -9,6 +9,7 @@ import { IntersectionPoint } from './types/IntersectionPoint';
 import { createNewSvgs } from './createNewSvgs';
 import { splitCubicCurve } from './splitCubicCurve';
 import { splitSvgInTwo } from './splitSvgInTwo';
+import { assignIdsToCmds } from './assignIdsToCmds';
 
 export class MySvg extends EngineObject {
   public path: string;
@@ -38,12 +39,14 @@ export class MySvg extends EngineObject {
     this.fill = fill;
     this.velocity = velocity;
     if (this.path) {
-      this.cmds = parseSVG(path);
+      this.cmds = parseSvg(path);
+      console.log('parsed svg', this.cmds);
       makeSvgPathCommandsAbsolute(this.cmds); // Note: mutates the commands in place!
       translateCoordinates(this.cmds, this.pos); // move the svg according to position
     } else if (cmds) {
       this.cmds = [...cmds];
     }
+    assignIdsToCmds(this.cmds);
     this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
     this.current2DPath.path = this.getCmdsAsPathString();
   }
@@ -81,15 +84,17 @@ export class MySvg extends EngineObject {
     //       break;
     //     case 'C':
     //       const { x0, y0, x1, y1, x2, y2, x, y } = c;
-    //       ctx.bezierCurveTo(x1, y1, x2, y2, x, y);
-    //       ctx.moveTo(x0, y0);
-    //       ctx.arc(x0, y0, 2, 0, 2 * Math.PI); // startpoint
-    //       ctx.moveTo(x1, y1);
-    //       // ctx.arc(x1, y1, 2, 0, 2 * Math.PI); // controlpoint 1
-    //       ctx.moveTo(x2, y2);
-    //       // ctx.arc(x2, y2, 2, 0, 2 * Math.PI); // controlpoint 2
-    //       ctx.moveTo(x, y);
-    //       ctx.arc(x, y, 2, 0, 2 * Math.PI);
+    //       if (c.isIntersectionPoint) {
+    //         ctx.bezierCurveTo(x1, y1, x2, y2, x, y);
+    //         ctx.moveTo(x0, y0);
+    //         ctx.arc(x0, y0, 2, 0, 2 * Math.PI); // startpoint
+    //         ctx.moveTo(x1, y1);
+    //         // ctx.arc(x1, y1, 2, 0, 2 * Math.PI); // controlpoint 1
+    //         ctx.moveTo(x2, y2);
+    //         // ctx.arc(x2, y2, 2, 0, 2 * Math.PI); // controlpoint 2
+    //         ctx.moveTo(x, y);
+    //         ctx.arc(x, y, 2, 0, 2 * Math.PI);
+    //       }
     //       break;
     //   }
     //   if (c.command == 'closepath') {
@@ -117,14 +122,18 @@ export class MySvg extends EngineObject {
       const newSvg1 = new MySvg(null, this.cmds, 'yellow', 'yellow', this.pos.copy());
       // add the intersection point to the existing SVG, splitting the curve
       const p = this.intersectionPoints[0];
-      const cmd: Cmd = this.cmds[p.id];
+      let cmdIndex = -1;
+      const cmd: Cmd = this.cmds.find((cmd, index) => {
+        cmdIndex = index;
+        return cmd.id == p.id;
+      });
       if (!cmd) return;
       if (cmd.code == 'C') {
         const newCurves2 = splitCubicCurve(cmd, p.intersectionPoint);
         newCurves2[1].isIntersectionPoint = true;
 
         translateCoordinates(newCurves2, newSvg1.pos.copy().multiply(vec2(-1, -1))); // translate the coordinates back to origin.
-        newSvg1.addCmds(p.id, 1, newCurves2);
+        newSvg1.addCmds(cmdIndex, 1, newCurves2);
         this.setCmds(newSvg1.cmds);
       }
     }

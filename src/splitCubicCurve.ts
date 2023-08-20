@@ -3,6 +3,7 @@ import { vec2 } from 'littlejsengine/build/littlejs.esm.min';
 import { isPointInConvexHull } from './isPointInConvexHull';
 import { subdivideCubicCurve } from './subdivideCubicCurve';
 import { Cmd } from './types/Cmd';
+import { createUniqueId } from './createUniqueId';
 
 /**
  * Pass 1 cubic bezier curve, and return 2 cubic bezier curves, which is loosly equal to the original curve
@@ -56,6 +57,7 @@ export function splitCubicCurve(c: Cmd, t0: vec2): Cmd[] {
   curves.forEach((curve) => {
     curve.code = c.code;
     curve.command = c.command;
+    curve.id = createUniqueId();
   });
   return curves;
 }

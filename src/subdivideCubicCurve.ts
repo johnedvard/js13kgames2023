@@ -1,3 +1,4 @@
+import { createUniqueId } from './createUniqueId';
 import { getCubicControlPoints } from './getCubicControlPoints';
 import { Cmd } from './types/Cmd';
 
@@ -28,6 +29,7 @@ export function subdivideCubicCurve(
   const { r0, r2, s0, s1, t0 } = getCubicControlPoints(x0, y0, x1, y1, x2, y2, x, y, u);
 
   const cmd1: Cmd = {
+    id: createUniqueId(),
     x0,
     y0,
     x1: r0.x,
@@ -38,6 +40,7 @@ export function subdivideCubicCurve(
     y: t0.y,
   };
   const cmd2: Cmd = {
+    id: createUniqueId(),
     x0: t0.x,
     y0: t0.y,
     x1: s1.x,

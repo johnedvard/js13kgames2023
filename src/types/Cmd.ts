@@ -1,6 +1,9 @@
+import { CmdCode } from './CmdCode';
+
 export type Cmd = {
-  command?: 'closepath' | 'moveto';
-  code?: 'M' | 'C' | 'Z';
+  id: number;
+  command?: 'closepath' | 'moveto' | 'curveto';
+  code?: CmdCode;
   isIntersectionPoint?: boolean;
   x?: number;
   y?: number;

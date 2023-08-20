@@ -30,10 +30,8 @@ function gameUpdate() {
     if (intersectionPoints.length) {
       console.log('intersectionPoints', intersectionPoints);
     }
-    intersectionPoints.forEach((p, index) => {
-      // TODO (johnedvard) find a better way than this hack. Maybe assign ID's to cmds when they are created
-      p.id += index; // adding index, because the svg will increase the cmds with 1, after the first intersection is added
-      if (!containsUniqueIntersectionPoint(svg.intersectionPoints, p.intersectionPoint)) {
+    intersectionPoints.forEach((p) => {
+      if (!containsUniqueIntersectionPoint(svg.intersectionPoints, p)) {
         svg.addIntersectionPoint(p);
       }
     });

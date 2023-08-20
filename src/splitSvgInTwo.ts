@@ -1,4 +1,5 @@
 import { MySvg } from './MySvg';
+import { createUniqueId } from './createUniqueId';
 import { Cmd } from './types/Cmd';
 
 // find index of intersection point.
@@ -16,6 +17,7 @@ export function splitSvgInTwo(svgs: MySvg[]) {
   const svg = svgs[0];
   const intersectionIndex = svg.cmds.findIndex((cmd) => cmd.isIntersectionPoint);
   const moveToCmd: Cmd = {
+    id: createUniqueId(),
     x: svg.cmds[intersectionIndex].x0,
     y: svg.cmds[intersectionIndex].y0,
     code: 'M',
@@ -30,6 +32,7 @@ export function splitSvgInTwo(svgs: MySvg[]) {
     keep.push(cmdCpy);
   }
   const cmdClosePath: Cmd = {
+    id: createUniqueId(),
     x: moveToCmd.x,
     y: moveToCmd.y,
     code: 'Z',
@@ -48,6 +51,7 @@ export function splitSvgInTwo(svgs: MySvg[]) {
     }
   }
   const moveToCmd2: Cmd = {
+    id: createUniqueId(),
     x: svg2.cmds[intersectionIndex2].x0,
     y: svg2.cmds[intersectionIndex2].y0,
     code: 'M',
@@ -68,6 +72,7 @@ export function splitSvgInTwo(svgs: MySvg[]) {
     keep2.push(cmdCpy);
   }
   const cmdClosePath2: Cmd = {
+    id: createUniqueId(),
     x: moveToCmd2.x,
     y: moveToCmd2.y,
     code: 'Z',
