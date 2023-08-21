@@ -6,6 +6,7 @@ export function parseSvg(path: string): Cmd[] {
   const cmds: Cmd[] = [];
   for (let i = 0; i < path.length; i++) {
     let cmd: Cmd;
+
     if (path[i] == 'M') {
       cmd = createCmd(path.substring(i + 1, path.length), 'M');
     } else if (path[i] == 'C') {

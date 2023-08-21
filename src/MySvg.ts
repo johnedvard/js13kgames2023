@@ -101,6 +101,8 @@ export class MySvg extends EngineObject {
     //     ctx.closePath();
     //   }
     // });
+    ctx.shadowColor = 'black';
+    ctx.shadowBlur = 5;
     ctx.fill(this.current2DPath.path2D);
     ctx.stroke(); // Render the path
   }
@@ -144,6 +146,7 @@ export class MySvg extends EngineObject {
       const newSvgs = createNewSvgs(this, this.intersectionPoints[1]);
       if (newSvgs && newSvgs.length && !this.children.length) {
         splitSvgInTwo(newSvgs);
+
         newSvgs.forEach((svg) => {
           this.children.push(svg);
         });
