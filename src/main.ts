@@ -34,7 +34,7 @@ function gameInit() {
   setGravity(-0.01);
   setCanvasFixedSize(vec2(640, 1136)); // iPhone SE resolution
 
-  // const bambooSvg = new MySvg(bambooPath, null, 'green', 'green', vec2(222, 222));
+  const bambooSvg = new MySvg(bambooPath, null, 'green', 'green', vec2(222, 222));
   // const bambooSvg1 = new MySvg(bambooPath, null, 'green', 'green', vec2(233, 232));
   // const bambooSvg2 = new MySvg(bambooPath, null, 'green', 'green', vec2(244, 252));
   // const bambooSvg3 = new MySvg(bambooPath, null, 'green', 'green', vec2(255, 200));
@@ -45,9 +45,8 @@ function gameInit() {
   // const kabutoEarRSvg = new MySvg(kabutoEarR, null, 'gold', 'gold', vec2(110, 155));
   // const kabutoCapSvg = new MySvg(kabutoCap, null, 'orange', 'orange', vec2(123, 166));
 
-  svgs
-    .push
-    // bambooSvg
+  svgs.push(
+    bambooSvg
     // bambooSvg1,
     // bambooSvg2,
     // bambooSvg3
@@ -57,7 +56,7 @@ function gameInit() {
     // kabutoHelmBackSvg,
     // kabutoEarRSvg,
     // kabutoCapSvg
-    ();
+  );
   mainMenu = new MainMenu();
 }
 
