@@ -8,9 +8,10 @@ import { translateCoordinates } from './translateCoordinates';
 
 export function createNewSvgs(svg: MySvg, p: IntersectionPoint): MySvg[] {
   if (!svg || !p) return [];
-  const newSvg1 = new MySvg(null, svg.cmds, 'red', 'red', svg.pos.copy().add(vec2(0, 0)), svg.velocity);
+  const newSvg1 = new MySvg(null, svg.cmds, 'orange', 'orange', svg.pos.copy().add(vec2(0, 0)), svg.velocity);
+  newSvg1.setGravityScale(5);
   const newSvg2 = new MySvg(null, svg.cmds, 'gray', 'gray', svg.pos.copy().add(vec2(0, 0), svg.velocity));
-
+  newSvg2.setGravityScale(10);
   let cmdIndex = -1;
   const cmd: Cmd = svg.cmds.find((cmd, index) => {
     cmdIndex = index;

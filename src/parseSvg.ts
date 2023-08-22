@@ -51,7 +51,6 @@ function getCoordinates(commandTxt: string, code: CmdCode) {
   const points = { x: NaN, y: NaN, x1: NaN, y1: NaN, x2: NaN, y2: NaN };
 
   const coords = commandTxt.split(' ');
-  console.log('coords', coords);
   switch (code) {
     case 'M':
       points.x = parseFloat(coords[0].split(',')[0]);

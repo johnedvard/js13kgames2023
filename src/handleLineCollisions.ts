@@ -1,7 +1,7 @@
 import { vec2 } from 'littlejsengine/build/littlejs.esm.min';
 
 import { getCubicControlPoints } from './getCubicControlPoints';
-import { mousePoints } from './inputUtils';
+import { mousePoints, maxDraws } from './inputUtils';
 import { getLineIntersection } from './getLineIntersection';
 import { IntersectionPoint } from './types/IntersectionPoint';
 import { MySvg } from './MySvg';
@@ -45,10 +45,12 @@ export function handleLineCollisions(svg: MySvg): IntersectionPoint[] {
   svg.cmds.forEach((cmd) => {
     if (cmd.code === 'C') {
       const { x0, y0, x1, y1, x2, y2, x, y } = cmd;
+
       for (let i = 0; i < 0.99; i = i + 0.01) {
         const p1 = getCubicControlPoints(x0, y0, x1, y1, x2, y2, x, y, i);
         const p2 = getCubicControlPoints(x0, y0, x1, y1, x2, y2, x, y, i + 0.01);
         for (let i = 0; i < mousePoints.length - 1; i++) {
+          if (mousePoints[i + 1].draws <= maxDraws - 1) continue;
           const prev = mousePoints[i];
           const next = mousePoints[i + 1];
           const intersectionPoint: vec2 = getLineIntersection(prev, next, p1.t0, p2.t0);

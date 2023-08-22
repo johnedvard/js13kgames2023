@@ -10,6 +10,7 @@ import { createNewSvgs } from './createNewSvgs';
 import { splitCubicCurve } from './splitCubicCurve';
 import { splitSvgInTwo } from './splitSvgInTwo';
 import { assignIdsToCmds } from './assignIdsToCmds';
+import { rotateCoordinates } from './rotateCoordinates';
 
 export class MySvg extends EngineObject {
   public path: string;
@@ -17,11 +18,13 @@ export class MySvg extends EngineObject {
   public fill: string;
   public pos: vec2;
   public velocity: vec2;
+  public size: vec2;
   public cmds: Cmd[];
   public current2DPath: { path?: string; path2D?: Path2D } = {};
+  public intersectionPoints: IntersectionPoint[] = [];
 
+  private gravitationScale: number = 1;
   private children: MySvg[] = [];
-  private intersectionPoints: IntersectionPoint[] = [];
   // TODO constructor override if we want to use cmd instead of path?
   constructor(
     path: string,
@@ -33,6 +36,7 @@ export class MySvg extends EngineObject {
     size: vec2 = vec2(1, 1)
   ) {
     super(pos, size);
+    this.size = size;
     this.pos = pos;
     this.path = path;
     this.stroke = stroke;
@@ -40,7 +44,6 @@ export class MySvg extends EngineObject {
     this.velocity = velocity;
     if (this.path) {
       this.cmds = parseSvg(path);
-      console.log('parsed svg', this.cmds);
       makeSvgPathCommandsAbsolute(this.cmds); // Note: mutates the commands in place!
       translateCoordinates(this.cmds, this.pos); // move the svg according to position
     } else if (cmds) {
@@ -51,11 +54,29 @@ export class MySvg extends EngineObject {
     this.current2DPath.path = this.getCmdsAsPathString();
   }
 
+  rotateSvg(angle: number) {
+    rotateCoordinates(this.cmds, angle);
+    this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
+    this.current2DPath.path = this.getCmdsAsPathString();
+  }
+  translateSvg(distance: vec2) {
+    translateCoordinates(this.cmds, distance.copy().add(this.pos));
+    this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
+    this.current2DPath.path = this.getCmdsAsPathString();
+  }
+  setPos(pos: vec2) {
+    const diff = pos.copy().subtract(this.pos);
+    translateCoordinates(this.cmds, diff);
+    this.pos.x = pos.x;
+    this.pos.y = pos.y;
+    this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
+    this.current2DPath.path = this.getCmdsAsPathString();
+  }
+
   update() {
-    // console.log('pos update: ', this.velocity);
-    // console.log('pos update: ', this.pos);
+    if (this.children.length) return;
     const prevPos = vec2(this.pos.x, this.pos.y);
-    this.velocity.y += gravity;
+    this.velocity.y += gravity * this.gravitationScale;
     this.pos.x += this.velocity.x;
     this.pos.y += this.velocity.y;
     translateCoordinates(this.cmds, prevPos.subtract(this.pos));
@@ -68,6 +89,8 @@ export class MySvg extends EngineObject {
       this.children.forEach((svg) => svg.render(ctx));
       return;
     }
+
+    ctx.save();
     ctx.lineWidth = 5;
     ctx.beginPath(); // Start a new path
     ctx.strokeStyle = this.stroke || 'blue';
@@ -101,10 +124,13 @@ export class MySvg extends EngineObject {
     //     ctx.closePath();
     //   }
     // });
+
     ctx.shadowColor = 'black';
     ctx.shadowBlur = 5;
+
     ctx.fill(this.current2DPath.path2D);
     ctx.stroke(); // Render the path
+    ctx.restore();
   }
 
   addCmds(start, deleteCount, cmds: Cmd[]) {
@@ -173,9 +199,17 @@ export class MySvg extends EngineObject {
     return res;
   }
 
+  setGravityScale(scale: number) {
+    this.gravitationScale = scale;
+  }
+
   setCmds(cmds: Cmd[]) {
     this.cmds = cmds;
     this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
     this.current2DPath.path = this.getCmdsAsPathString();
+  }
+
+  isCut() {
+    return this.children.length > 0;
   }
 }

@@ -1,6 +1,6 @@
 import { mouseIsDown, mousePosScreen } from 'littlejsengine/build/littlejs.esm.min';
 export const mousePoints = [];
-const maxDraws = 6;
+export const maxDraws = 6;
 
 function removeMouseDraggings() {
   for (let i = mousePoints.length - 1; i >= 0; i--) {
