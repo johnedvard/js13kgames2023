@@ -10,5 +10,5 @@ export function getLineIntersection(p1: vec2, p2: vec2, p3: vec2, p4: vec2): vec
   const intersectionX = p1.x + u * (p2.x - p1.x);
   const intersectionY = p1.y + u * (p2.y - p1.y);
   if (Number.isNaN(intersectionX) || Number.isNaN(intersectionY)) return null;
-  return vec2(intersectionX, intersectionY);
+  return vec2(p3.x, p3.y); // return a point actually on the line. It's close enough to the actual intersection
 }

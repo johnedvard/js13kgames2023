@@ -7,7 +7,7 @@ import { IntersectionPoint } from './types/IntersectionPoint';
 import { MySvg } from './MySvg';
 
 export function containsUniqueIntersectionPoint(points: IntersectionPoint[], newPoint: IntersectionPoint) {
-  const tolerance = 15; // ignore points that are close enough to p
+  const tolerance = 10; // ignore points that are close enough to p
   let containsPoint = false;
   for (let existingPoint of points) {
     if (
@@ -23,7 +23,7 @@ export function containsUniqueIntersectionPoint(points: IntersectionPoint[], new
 }
 
 export function containsUniquePoint(points: IntersectionPoint[], newPoint: vec2) {
-  const tolerance = 15; // ignore points that are close enough to p
+  const tolerance = 10; // ignore points that are close enough to p
   let containsUniquePoint = false;
   for (let existingPoint of points) {
     if (
@@ -50,13 +50,13 @@ export function handleLineCollisions(svg: MySvg): IntersectionPoint[] {
         const p1 = getCubicControlPoints(x0, y0, x1, y1, x2, y2, x, y, i);
         const p2 = getCubicControlPoints(x0, y0, x1, y1, x2, y2, x, y, i + 0.01);
         for (let i = 0; i < mousePoints.length - 1; i++) {
-          if (mousePoints[i + 1].draws <= maxDraws - 1) continue;
+          if (mousePoints[i + 1].draws <= maxDraws - 1) continue; // don't check old mouse points
           const prev = mousePoints[i];
           const next = mousePoints[i + 1];
           const intersectionPoint: vec2 = getLineIntersection(prev, next, p1.t0, p2.t0);
           if (intersectionPoint) {
             if (!containsUniquePoint(intersectionPoints, intersectionPoint)) {
-              intersectionPoints.push({ id: cmd.id, intersectionPoint });
+              intersectionPoints.push({ id: cmd.id, intersectionPoint }); // TODO (johnedvard) maybe add the actual cmd pointer instead of ID
             }
           }
         }

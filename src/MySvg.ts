@@ -85,6 +85,7 @@ export class MySvg extends EngineObject {
   }
   render(ctx) {
     if (!ctx) return;
+    this.debugIntersectionPoints(ctx);
     if (this.children.length) {
       this.children.forEach((svg) => svg.render(ctx));
       return;
@@ -133,6 +134,19 @@ export class MySvg extends EngineObject {
     ctx.restore();
   }
 
+  debugIntersectionPoints(ctx) {
+    ctx.save();
+    ctx.fillStyle = 'green';
+    this.getIntersectionPoints().forEach(({ intersectionPoint }) => {
+      const x = intersectionPoint.x;
+      const y = intersectionPoint.y;
+      ctx.moveTo(x, y);
+      ctx.arc(x, y, 5, 0, 2 * Math.PI); // startpoint
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
   addCmds(start, deleteCount, cmds: Cmd[]) {
     translateCoordinates(cmds, this.pos);
     this.cmds.splice(start, deleteCount, ...cmds);
@@ -147,7 +161,7 @@ export class MySvg extends EngineObject {
   addIntersectionPoint(intersectionPoint: IntersectionPoint) {
     this.intersectionPoints.push(intersectionPoint);
     if (this.intersectionPoints.length == 1) {
-      const newSvg1 = new MySvg(null, this.cmds, 'yellow', 'yellow', this.pos.copy());
+      const newSvg1 = new MySvg(null, this.cmds, 'yellow', 'yellow', this.pos.copy()); // create a copy to manage the intersection
       // add the intersection point to the existing SVG, splitting the curve
       const p = this.intersectionPoints[0];
       let cmdIndex = -1;
