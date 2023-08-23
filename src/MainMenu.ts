@@ -44,7 +44,11 @@ export class MainMenu {
     });
   }
   render(ctx) {
+    ctx.save();
+    ctx.shadowColor = 'black';
+    ctx.shadowBlur = 5;
     this.letters.forEach((l) => l.render(ctx));
+    ctx.restore();
     this.renderStartButton(ctx);
   }
   private renderStartButton(ctx) {
@@ -56,7 +60,7 @@ export class MainMenu {
       const y = smoothstep(canvasFixedSize.y + 50, 745, ratio);
       ctx.font = 'bold 38px serif';
       ctx.fillStyle = black;
-      ctx.shadowBlur = false;
+      ctx.shadowBlur = 0;
       ctx.fillText('Slice to Play', canvasFixedSize.x / 2 - 100, y);
     }
     ctx.restore();

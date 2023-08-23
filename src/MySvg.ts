@@ -11,11 +11,12 @@ import { splitCubicCurve } from './splitCubicCurve';
 import { splitSvgInTwo } from './splitSvgInTwo';
 import { assignIdsToCmds } from './assignIdsToCmds';
 import { rotateCoordinates } from './rotateCoordinates';
+import { emit } from './gameEvents';
 
 export class MySvg extends EngineObject {
   public path: string;
   public stroke: string;
-  public fill: string;
+  public fill: string | CanvasGradient;
   public pos: vec2;
   public velocity: vec2;
   public size: vec2;
@@ -30,10 +31,11 @@ export class MySvg extends EngineObject {
     path: string,
     cmds: Cmd[],
     stroke: string,
-    fill: string,
+    fill: string | CanvasGradient,
     pos: vec2 = vec2(0, 0),
     velocity: vec2 = vec2(0, 0),
-    size: vec2 = vec2(1, 1)
+    size: vec2 = vec2(1, 1),
+    gravitationScale = 1
   ) {
     super(pos, size);
     this.size = size;
@@ -42,6 +44,8 @@ export class MySvg extends EngineObject {
     this.stroke = stroke;
     this.fill = fill;
     this.velocity = velocity;
+    this.gravitationScale = gravitationScale;
+
     if (this.path) {
       this.cmds = parseSvg(path);
       makeSvgPathCommandsAbsolute(this.cmds); // Note: mutates the commands in place!
@@ -54,13 +58,14 @@ export class MySvg extends EngineObject {
     this.current2DPath.path = this.getCmdsAsPathString();
   }
 
-  rotateSvg(angle: number) {
-    rotateCoordinates(this.cmds, angle);
+  rotateSvg(angle: number, centerPoint = vec2(0, 0)) {
+    rotateCoordinates(this.cmds, angle, centerPoint);
     this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
     this.current2DPath.path = this.getCmdsAsPathString();
   }
   translateSvg(distance: vec2) {
-    translateCoordinates(this.cmds, distance.copy().add(this.pos));
+    const transCoord = distance.copy().add(this.pos);
+    translateCoordinates(this.cmds, transCoord);
     this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
     this.current2DPath.path = this.getCmdsAsPathString();
   }
@@ -69,23 +74,24 @@ export class MySvg extends EngineObject {
     translateCoordinates(this.cmds, diff);
     this.pos.x = pos.x;
     this.pos.y = pos.y;
-    this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
-    this.current2DPath.path = this.getCmdsAsPathString();
   }
 
-  update() {
-    if (this.children.length) return;
+  update(addedVelocity = vec2(0, 0)) {
+    if (this.isCut()) return;
     const prevPos = vec2(this.pos.x, this.pos.y);
     this.velocity.y += gravity * this.gravitationScale;
     this.pos.x += this.velocity.x;
     this.pos.y += this.velocity.y;
+    this.pos.y += addedVelocity.y;
+    this.pos.x += addedVelocity.x;
+
     translateCoordinates(this.cmds, prevPos.subtract(this.pos));
     this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
     this.current2DPath.path = this.getCmdsAsPathString();
   }
   render(ctx) {
     if (!ctx) return;
-    this.debugIntersectionPoints(ctx);
+    // this.debugIntersectionPoints(ctx);
     if (this.children.length) {
       this.children.forEach((svg) => svg.render(ctx));
       return;
@@ -126,9 +132,6 @@ export class MySvg extends EngineObject {
     //   }
     // });
 
-    ctx.shadowColor = 'black';
-    ctx.shadowBlur = 5;
-
     ctx.fill(this.current2DPath.path2D);
     ctx.stroke(); // Render the path
     ctx.restore();
@@ -161,7 +164,16 @@ export class MySvg extends EngineObject {
   addIntersectionPoint(intersectionPoint: IntersectionPoint) {
     this.intersectionPoints.push(intersectionPoint);
     if (this.intersectionPoints.length == 1) {
-      const newSvg1 = new MySvg(null, this.cmds, 'yellow', 'yellow', this.pos.copy()); // create a copy to manage the intersection
+      const newSvg1 = new MySvg(
+        null,
+        this.cmds,
+        'yellow',
+        'yellow',
+        this.pos.copy(),
+        this.velocity.copy(),
+        this.size.copy(),
+        this.gravitationScale
+      ); // create a copy to manage the intersection
       // add the intersection point to the existing SVG, splitting the curve
       const p = this.intersectionPoints[0];
       let cmdIndex = -1;
@@ -190,6 +202,7 @@ export class MySvg extends EngineObject {
         newSvgs.forEach((svg) => {
           this.children.push(svg);
         });
+        emit('split');
       }
     }
   }
@@ -217,6 +230,10 @@ export class MySvg extends EngineObject {
     this.gravitationScale = scale;
   }
 
+  getGravityScale() {
+    return this.gravitationScale;
+  }
+
   setCmds(cmds: Cmd[]) {
     this.cmds = cmds;
     this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
@@ -225,5 +242,9 @@ export class MySvg extends EngineObject {
 
   isCut() {
     return this.children.length > 0;
+  }
+
+  addChild(svg: MySvg) {
+    this.children.push(svg);
   }
 }

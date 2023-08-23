@@ -2,6 +2,7 @@ import { vec2, timeDelta } from 'littlejsengine/build/littlejs.esm.min';
 
 import { MySvg } from './MySvg';
 import { smoothstep } from './smoothstep';
+import { off, on } from './gameEvents';
 
 export function tween(svg: MySvg, from: vec2, to: vec2, duration: number) {
   let ellapsedTime = 0;
@@ -13,8 +14,8 @@ export function tween(svg: MySvg, from: vec2, to: vec2, duration: number) {
     const y = smoothstep(from.y, to.y, ratio);
     svg.setPos(vec2(x, y));
     if (ellapsedTime >= duration) {
-      window.removeEventListener('tick', onTick);
+      off('tick', onTick);
     }
   };
-  window.addEventListener('tick', onTick);
+  on('tick', onTick);
 }

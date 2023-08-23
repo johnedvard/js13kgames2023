@@ -1,11 +1,13 @@
+import { vec2 } from 'littlejsengine/build/littlejs.esm.min';
+
 import { Cmd } from './types/Cmd';
 
-export function rotateCoordinates(cmds: Cmd[], angle: number) {
+export function rotateCoordinates(cmds: Cmd[], angle: number, center = vec2(0, 0)) {
   const radians = (Math.PI / 180) * angle;
   const cos = Math.cos(radians);
   const sin = Math.sin(radians);
-  const cy = 0;
-  const cx = 0;
+  const cx = center.x;
+  const cy = center.y;
 
   const rotateX = (x: number, y: number) => {
     const xDiff = x - cx;
