@@ -203,7 +203,7 @@ export class MySvg extends EngineObject {
         newSvgs.forEach((svg) => {
           this.children.push(svg);
         });
-        emit('split');
+        emit('split', this);
       }
     }
   }

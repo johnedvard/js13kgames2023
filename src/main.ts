@@ -49,8 +49,8 @@ function gameInit() {
   // const kabutoEarLSvg = new MySvg(kabutoEarL, null, 'gold', 'gold', vec2(174, 155));
   // const kabutoEarRSvg = new MySvg(kabutoEarR, null, 'gold', 'gold', vec2(110, 155));
   // const kabutoCapSvg = new MySvg(kabutoCap, null, 'orange', 'orange', vec2(123, 166));
-  for (let i = 0; i < 10; i++) {
-    arrows.push(new Arrow(vec2(i * 100, i * 20)));
+  for (let i = 0; i < 5; i++) {
+    arrows.push(new Arrow(vec2(i * 10 + Math.random() * 900, i * (10 + Math.random() * 100))));
   }
 
   svgs

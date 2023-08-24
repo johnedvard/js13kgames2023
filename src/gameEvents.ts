@@ -1,9 +1,10 @@
 export type EventType = 'tick' | 'split';
 
 const tickEvent = new CustomEvent('tick');
-const splitEvent = new CustomEvent('split');
+const splitEvent = new CustomEvent('split', { detail: { data: {} } });
 
-export function emit(eventType: EventType) {
+export function emit(eventType: EventType, data?: any) {
+  splitEvent.detail.data = data;
   window.dispatchEvent(getEvent(eventType));
 }
 export function on(eventType: EventType, callback) {

@@ -5,6 +5,7 @@ import { red } from './colors';
 import { bambooPath } from './svgPaths';
 import { handleSvgCollisions } from './handleSvgCollisions';
 import { tween } from './tween';
+import { on } from './gameEvents';
 
 export class MainMenu {
   letters: MySvg[] = [];
@@ -44,7 +45,17 @@ export class MainMenu {
       vec2(canvasFixedSize.x / 2 - 90, 700),
       this.startBtnAnimDuration
     );
+
+    on('split', this.onSplit);
   }
+  onSplit = (evt: CustomEvent) => {
+    console.log(evt.detail.data);
+    this.playButton.forEach((svg) => {
+      if (svg == evt.detail.data) {
+        console.log('play button was cut, start game', svg);
+      }
+    });
+  };
 
   update() {
     this.ellapsedTime += timeDelta;
@@ -55,6 +66,7 @@ export class MainMenu {
       handleSvgCollisions(s, 5);
     });
   }
+
   render(ctx) {
     ctx.save();
     ctx.shadowColor = 'black';
