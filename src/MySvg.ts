@@ -24,9 +24,9 @@ export class MySvg extends EngineObject {
   public cmds: Cmd[];
   public current2DPath: { path?: string; path2D?: Path2D } = {};
   public intersectionPoints: IntersectionPoint[] = [];
+  public children: MySvg[] = [];
 
   private gravitationScale: number = 1;
-  private children: MySvg[] = [];
   // TODO constructor override if we want to use cmd instead of path?
   constructor(
     path: string,

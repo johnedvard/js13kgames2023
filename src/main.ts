@@ -8,13 +8,14 @@ import {
 } from 'littlejsengine/build/littlejs.esm.min';
 
 import { drawTouchLine, updateMouseControls } from './inputUtils';
-import { MySvg } from './MySvg';
+// import { MySvg } from './MySvg';
 import { MainMenu } from './MainMenu';
 import { handleSvgCollisions } from './handleSvgCollisions';
-import { mongolHemlMainPath, mongolHemlTopPath } from './svgPaths';
-import { black, red } from './colors';
+// import { mongolHemlMainPath, mongolHemlTopPath } from './svgPaths';
+import { black } from './colors';
 import { Lantern } from './Lantern';
 import { emit } from './gameEvents';
+import { Arrow } from './Arrow';
 
 // const kabutoEmblem =
 //   'M51.793,70.012C46.372,73.975 22.116,73.975 16.695,70.012C13.893,67.963 7.256,48.475 7.695,25.012C8.135,1.549 -2.816,-0.175 0.695,0.012C13.195,0.679 20.862,5.679 28.695,20.012C28.695,20.012 17.792,18.522 16.695,32.012C16.321,36.618 17.862,54.512 20.695,61.012C22.499,65.149 45.99,65.149 47.793,61.012C50.626,54.512 52.167,36.618 51.793,32.012C50.697,18.522 39.793,20.012 39.793,20.012C47.626,5.679 55.293,0.679 67.793,0.012C71.304,-0.175 60.354,1.549 60.793,25.012C61.233,48.475 54.595,67.963 51.793,70.012Z';
@@ -31,14 +32,15 @@ import { emit } from './gameEvents';
 let svgs = [];
 let mainMenu: MainMenu;
 let lanterns: Lantern[] = [];
+let arrows: Arrow[] = [];
 
 function gameInit() {
   setGravity(-0.01);
   setCanvasFixedSize(vec2(640, 1136)); // iPhone SE resolution
 
   // const bambooSvg = new MySvg(bambooPath, null, 'green', 'green', vec2(222, 222));
-  const mongolHelmTop = new MySvg(mongolHemlTopPath, null, red, red, vec2(383, 116));
-  const mongolHelmMain = new MySvg(mongolHemlMainPath, null, '#D6D6D6', '#D6D6D6', vec2(333, 156));
+  // const mongolHelmTop = new MySvg(mongolHemlTopPath, null, red, red, vec2(383, 116));
+  // const mongolHelmMain = new MySvg(mongolHemlMainPath, null, '#D6D6D6', '#D6D6D6', vec2(333, 156));
   // const bambooSvg2 = new MySvg(bambooPath, null, 'green', 'green', vec2(244, 252));
   // const bambooSvg3 = new MySvg(bambooPath, null, 'green', 'green', vec2(255, 200));
   // const kabutoEmblemSvg = new MySvg(kabutoEmblem, null, 'gold', 'gold', vec2(115, 100));
@@ -47,11 +49,15 @@ function gameInit() {
   // const kabutoEarLSvg = new MySvg(kabutoEarL, null, 'gold', 'gold', vec2(174, 155));
   // const kabutoEarRSvg = new MySvg(kabutoEarR, null, 'gold', 'gold', vec2(110, 155));
   // const kabutoCapSvg = new MySvg(kabutoCap, null, 'orange', 'orange', vec2(123, 166));
+  for (let i = 0; i < 10; i++) {
+    arrows.push(new Arrow(vec2(i * 100, i * 20)));
+  }
 
-  svgs.push(
+  svgs
+    .push
     // bambooSvg,
-    mongolHelmTop,
-    mongolHelmMain
+    // mongolHelmTop,
+    // mongolHelmMain
 
     // bambooSvg1,
     // bambooSvg2,
@@ -62,7 +68,7 @@ function gameInit() {
     // kabutoHelmBackSvg,
     // kabutoEarRSvg,
     // kabutoCapSvg
-  );
+    ();
   mainMenu = new MainMenu();
   for (let i = 0; i < 2; i++) {
     lanterns.push(new Lantern(vec2(i * 146, canvasFixedSize.y + i * 14)));
@@ -78,6 +84,7 @@ function gameUpdate() {
   });
   if (mainMenu) mainMenu.update();
   lanterns.forEach((lantern) => lantern.update());
+  arrows.forEach((lantern) => lantern.update());
 }
 
 function gameUpdatePost() {
@@ -94,6 +101,8 @@ function gameRender() {
   svgs.forEach((svg) => svg.render(ctx));
   if (mainMenu) mainMenu.render(ctx);
   lanterns.forEach((lantern) => lantern.render(ctx));
+  arrows.forEach((a) => a.render(ctx));
+
   drawTouchLine(ctx);
   // ctx.font = 'bold 48px serif';
 }
