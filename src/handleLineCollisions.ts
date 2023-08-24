@@ -6,8 +6,11 @@ import { getLineIntersection } from './getLineIntersection';
 import { IntersectionPoint } from './types/IntersectionPoint';
 import { MySvg } from './MySvg';
 
-export function containsUniqueIntersectionPoint(points: IntersectionPoint[], newPoint: IntersectionPoint) {
-  const tolerance = 10; // ignore points that are close enough to p
+export function containsUniqueIntersectionPoint(
+  points: IntersectionPoint[],
+  newPoint: IntersectionPoint,
+  tolerance = 10
+) {
   let containsPoint = false;
   for (let existingPoint of points) {
     if (
@@ -22,8 +25,7 @@ export function containsUniqueIntersectionPoint(points: IntersectionPoint[], new
   return containsPoint;
 }
 
-export function containsUniquePoint(points: IntersectionPoint[], newPoint: vec2) {
-  const tolerance = 10; // ignore points that are close enough to p
+export function containsUniquePoint(points: IntersectionPoint[], newPoint: vec2, tolerance = 10) {
   let containsUniquePoint = false;
   for (let existingPoint of points) {
     if (

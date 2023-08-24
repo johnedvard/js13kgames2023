@@ -1,14 +1,14 @@
 import { vec2, canvasFixedSize, timeDelta } from 'littlejsengine/build/littlejs.esm.min';
 
 import { MySvg } from './MySvg';
-import { black, red } from './colors';
-import { bambooPath, buttonPath } from './svgPaths';
+import { red } from './colors';
+import { bambooPath } from './svgPaths';
 import { handleSvgCollisions } from './handleSvgCollisions';
 import { tween } from './tween';
-import { smoothstep } from './smoothstep';
 
 export class MainMenu {
   letters: MySvg[] = [];
+  playButton: MySvg[] = [];
   startButton: MySvg;
   ellapsedTime = 0;
   startBtnAnimDuration = 1;
@@ -21,26 +21,38 @@ export class MainMenu {
     const sSvgs = this.createS(startOffset);
     const aSvgs = this.createA(startOffset);
     const mSvgs = this.createM(startOffset);
-    this.startButton = this.createButton();
+    const pSvgs = this.createP();
+    const lSvgs = this.createL();
+    const aSvgs2 = this.createA();
+    const ySvgs = this.createY();
+    lSvgs.forEach((svg) => svg.translateSvg(vec2(100, 0)));
+    aSvgs2.forEach((svg) => svg.translateSvg(vec2(30, -140)));
+    ySvgs.forEach((svg) => svg.translateSvg(vec2(390, 20)));
+
+    this.playButton = [...pSvgs, ...lSvgs, ...aSvgs2, ...ySvgs];
+    this.playButton.forEach((s) => s.setScale(0.5));
     this.letters.push(...sSvgs);
     this.letters.push(...aSvgs);
     this.letters.push(...mSvgs);
 
     this.letters.forEach((s) => s.setGravityScale(0));
+    this.playButton.forEach((s) => s.setGravityScale(0));
 
     tween(
-      this.startButton,
-      vec2(canvasFixedSize.x / 2 - this.startButton.size.x / 2, canvasFixedSize.y),
-      vec2(canvasFixedSize.x / 2 - this.startButton.size.x / 2, 700),
+      this.playButton,
+      vec2(canvasFixedSize.x / 2 - 90, canvasFixedSize.y),
+      vec2(canvasFixedSize.x / 2 - 90, 700),
       this.startBtnAnimDuration
     );
   }
 
   update() {
     this.ellapsedTime += timeDelta;
-    this.letters.forEach((svg) => {
-      handleSvgCollisions(svg);
-      handleSvgCollisions(this.startButton);
+    this.letters.forEach((s) => {
+      handleSvgCollisions(s);
+    });
+    this.playButton.forEach((s) => {
+      handleSvgCollisions(s, 5);
     });
   }
   render(ctx) {
@@ -48,23 +60,10 @@ export class MainMenu {
     ctx.shadowColor = 'black';
     ctx.shadowBlur = 5;
     this.letters.forEach((l) => l.render(ctx));
+    this.playButton.forEach((s) => s.render(ctx));
     ctx.restore();
-    this.renderStartButton(ctx);
   }
-  private renderStartButton(ctx) {
-    ctx.save();
-    this.startButton.render(ctx);
-    if (!this.startButton.isCut()) {
-      const ratio = this.ellapsedTime / this.startBtnAnimDuration;
 
-      const y = smoothstep(canvasFixedSize.y + 50, 745, ratio);
-      ctx.font = 'bold 38px serif';
-      ctx.fillStyle = black;
-      ctx.shadowBlur = 0;
-      ctx.fillText('Slice to Play', canvasFixedSize.x / 2 - 100, y);
-    }
-    ctx.restore();
-  }
   private createS(startOffset = vec2(0, 0)) {
     const offsetX = startOffset.x;
     const s1 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
@@ -126,9 +125,45 @@ export class MainMenu {
     m4.translateSvg(vec2(435 + offsetX, 150));
     return [m1, m2, m3, m4];
   }
-  createButton() {
-    const b = new MySvg(buttonPath, null, red, red, vec2(0, 0), vec2(0, 0), vec2(250, 100));
-    b.setGravityScale(0);
-    return b;
+
+  createP() {
+    const p1 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const p2 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+
+    for (let i = 0; i < 5; i++) {
+      p2.rotateSvg(-10);
+    }
+    p2.translateSvg(vec2(-20, -5));
+    const p3 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+
+    for (let i = 0; i < 5; i++) {
+      p3.rotateSvg(10);
+    }
+    p3.translateSvg(vec2(70, 20));
+
+    return [p1, p2, p3];
+  }
+
+  createL() {
+    const l1 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const l2 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+
+    for (let i = 0; i < 17; i++) {
+      l2.rotateSvg(5);
+    }
+    l2.translateSvg(vec2(100, 100));
+    return [l1, l2];
+  }
+  createY() {
+    const y1 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const y2 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+
+    for (let i = 0; i < 3; i++) {
+      y1.rotateSvg(10);
+      y2.rotateSvg(-10);
+    }
+    y2.translateSvg(vec2(-75, -20));
+
+    return [y1, y2];
   }
 }

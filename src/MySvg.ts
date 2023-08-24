@@ -12,6 +12,7 @@ import { splitSvgInTwo } from './splitSvgInTwo';
 import { assignIdsToCmds } from './assignIdsToCmds';
 import { rotateCoordinates } from './rotateCoordinates';
 import { emit } from './gameEvents';
+import { scaleCoordinates } from './scaleCoodinates';
 
 export class MySvg extends EngineObject {
   public path: string;
@@ -242,6 +243,12 @@ export class MySvg extends EngineObject {
 
   isCut() {
     return this.children.length > 0;
+  }
+
+  setScale(scale: number) {
+    scaleCoordinates(this.cmds, scale);
+    this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
+    this.current2DPath.path = this.getCmdsAsPathString();
   }
 
   addChild(svg: MySvg) {

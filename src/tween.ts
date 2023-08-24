@@ -4,15 +4,15 @@ import { MySvg } from './MySvg';
 import { smoothstep } from './smoothstep';
 import { off, on } from './gameEvents';
 
-export function tween(svg: MySvg, from: vec2, to: vec2, duration: number) {
+export function tween(svgs: MySvg[], from: vec2, to: vec2, duration: number) {
   let ellapsedTime = 0;
-  svg.setPos(vec2(from.x, from.y));
+  svgs.forEach((svg) => svg.setPos(vec2(from.x, from.y)));
   const onTick = () => {
     ellapsedTime += timeDelta;
     const ratio = ellapsedTime / duration;
     const x = smoothstep(from.x, to.x, ratio);
     const y = smoothstep(from.y, to.y, ratio);
-    svg.setPos(vec2(x, y));
+    svgs.forEach((svg) => svg.setPos(vec2(x, y)));
     if (ellapsedTime >= duration) {
       off('tick', onTick);
     }

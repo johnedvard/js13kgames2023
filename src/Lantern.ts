@@ -75,7 +75,7 @@ export class Lantern {
     this.getSvgs().forEach((svg) => svg.render(ctx));
     const x = this.centerPos.x + this.pos.x;
     const y = this.centerPos.y + this.pos.y;
-    this.gradient = mainContext.createRadialGradient(x, y, 100, 100, 100, 70);
+    this.gradient = mainContext.createRadialGradient(x, y, 200, 200, canvasFixedSize.x - 100, 100);
 
     // Add three color stops
     this.gradient.addColorStop(0, 'red');
