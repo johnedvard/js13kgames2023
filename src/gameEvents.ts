@@ -1,6 +1,7 @@
-export type EventType = 'tick' | 'split';
+export type EventType = 'tick' | 'split' | 'play';
 
 const tickEvent = new CustomEvent('tick');
+const playEvent = new CustomEvent('play');
 const splitEvent = new CustomEvent('split', { detail: { data: {} } });
 
 export function emit(eventType: EventType, data?: any) {
@@ -20,5 +21,7 @@ function getEvent(eventType: EventType) {
       return tickEvent;
     case 'split':
       return splitEvent;
+    case 'play':
+      return playEvent;
   }
 }
