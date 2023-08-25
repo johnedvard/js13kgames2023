@@ -58,13 +58,12 @@ export class Lantern {
 
       return;
     }
-    // const centerX = this.centerPos.x + this.pos.x;
-    // const centerY = this.centerPos.y + this.pos.y;
+    // const centerPos = this.getCenterPos();
     this.velocity.y -= gravity * this.gravitationScale;
     this.pos.x += this.velocity.x;
     this.pos.y += this.velocity.y;
     this.getSvgs().forEach((svg) => {
-      //   svg.rotateSvg(-1, vec2(centerX, centerY));
+      //   svg.rotateSvg(-1, vec2(centerPos.x, centerPos.y));
       svg.update(vec2(-this.velocity.x, -this.velocity.y));
     });
     handleSvgCollisions(this.svgBody);
@@ -96,5 +95,10 @@ export class Lantern {
     ctx.fill();
 
     ctx.restore();
+  }
+  getCenterPos(): vec2 {
+    const centerX = this.centerPos.x + this.pos.x;
+    const centerY = this.centerPos.y + this.pos.y;
+    return vec2(centerX, centerY);
   }
 }

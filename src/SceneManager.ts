@@ -9,6 +9,7 @@ export class SceneManager {
   mainMenu: MainMenu;
   level: Level;
   isChangingScenes = false;
+
   constructor() {
     // TODO (johnedvard) create level or main menu depending on current scene instead
     this.mainMenu = new MainMenu();
@@ -27,6 +28,7 @@ export class SceneManager {
     };
     const onEnded = () => {
       console.log('onEnded');
+      this.level.start();
       this.currentScene = 'l';
     };
     startSceneTransition(1.5, onMiddle, onEnded);
