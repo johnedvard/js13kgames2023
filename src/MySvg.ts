@@ -13,10 +13,10 @@ import { assignIdsToCmds } from './assignIdsToCmds';
 import { rotateCoordinates } from './rotateCoordinates';
 import { emit } from './gameEvents';
 import { scaleCoordinates } from './scaleCoodinates';
+import { ColorToSliceType } from './ColorToSliceType';
 
 export class MySvg extends EngineObject {
   public path: string;
-  public stroke: string;
   public fill: string | CanvasGradient;
   public pos: vec2;
   public velocity: vec2;
@@ -25,13 +25,14 @@ export class MySvg extends EngineObject {
   public current2DPath: { path?: string; path2D?: Path2D } = {};
   public intersectionPoints: IntersectionPoint[] = [];
   public children: MySvg[] = [];
+  public sliceColor: ColorToSliceType | null = null;
 
   private gravitationScale: number = 1;
   // TODO constructor override if we want to use cmd instead of path?
   constructor(
     path: string,
     cmds: Cmd[],
-    stroke: string,
+    sliceColor: ColorToSliceType,
     fill: string | CanvasGradient,
     pos: vec2 = vec2(0, 0),
     velocity: vec2 = vec2(0, 0),
@@ -42,7 +43,7 @@ export class MySvg extends EngineObject {
     this.size = size;
     this.pos = pos;
     this.path = path;
-    this.stroke = stroke;
+    this.sliceColor = sliceColor;
     this.fill = fill;
     this.velocity = velocity;
     this.gravitationScale = gravitationScale;
@@ -101,7 +102,6 @@ export class MySvg extends EngineObject {
     ctx.save();
     ctx.lineWidth = 5;
     ctx.beginPath(); // Start a new path
-    ctx.strokeStyle = this.stroke || 'blue';
     ctx.fillStyle = this.fill || 'blue';
     // Only for debugging:
     // this.cmds.forEach((c) => {
@@ -134,7 +134,6 @@ export class MySvg extends EngineObject {
     // });
 
     ctx.fill(this.current2DPath.path2D);
-    ctx.stroke(); // Render the path
     ctx.restore();
   }
 
@@ -168,7 +167,7 @@ export class MySvg extends EngineObject {
       const newSvg1 = new MySvg(
         null,
         this.cmds,
-        'yellow',
+        this.sliceColor,
         'yellow',
         this.pos.copy(),
         this.velocity.copy(),

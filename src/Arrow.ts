@@ -1,23 +1,24 @@
 import { vec2, timeDelta } from 'littlejsengine/build/littlejs.esm.min';
 
 import { MySvg } from './MySvg';
-import { red } from './colors';
+import { yellow } from './colors';
 import { arrowFeatherPath, arrowFlamePath, arrowPath } from './svgPaths';
 import { handleSvgCollisions } from './handleSvgCollisions';
 import { Cmd } from './types/Cmd';
 
 export class Arrow {
-  arrowFlameSvg = new MySvg(arrowFlamePath, null, red, red, vec2(0, 180));
-  arrowSvg = new MySvg(arrowPath, null, 'white', 'white', vec2(30, 14));
-  arrowFeatherSvg = new MySvg(arrowFeatherPath, null, red, red, vec2(20, 0));
+  arrowFlameSvg = new MySvg(arrowFlamePath, null, null, yellow, vec2(0, 180));
+  arrowSvg = new MySvg(arrowPath, null, null, 'white', vec2(30, 14));
+  arrowFeatherSvg = new MySvg(arrowFeatherPath, null, null, yellow, vec2(20, 0));
   maxTipX: number;
   minTipX: number;
   ellapsedTime: number = 0;
-  constructor(startPos = vec2(0, 0)) {
+  constructor(startPos = vec2(0, 0), vel = vec2(0, -1)) {
     this.getSvgs().forEach((s) => {
       s.setPos(vec2(s.pos.x + startPos.x, s.pos.y + startPos.y));
       s.setScale(0.5);
-      s.setGravityScale(1);
+      s.setGravityScale(0);
+      s.velocity = vel;
     });
 
     this.minTipX = this.arrowFlameSvg.cmds[2].x - 2;
@@ -29,6 +30,14 @@ export class Arrow {
   }
   update() {
     this.getSvgs().forEach((s) => s.update());
+    if (this.arrowFeatherSvg.isCut()) {
+      this.arrowFeatherSvg.children[0].fill = 'purple';
+      this.arrowFeatherSvg.children[1].fill = 'pink';
+      this.arrowFeatherSvg.children[0].velocity.x = 2;
+      this.arrowFeatherSvg.children[1].velocity.x = -2;
+      this.arrowFeatherSvg.children[0].setGravityScale(15);
+      this.arrowFeatherSvg.children[1].setGravityScale(10);
+    }
     if (this.arrowSvg.isCut()) {
       this.arrowFlameSvg.setScale(0.93);
       this.arrowFlameSvg.setPos(vec2(this.arrowFlameSvg.pos.x + 5, this.arrowFlameSvg.pos.y + 16));

@@ -11,7 +11,7 @@ export function createNewSvgs(svg: MySvg, p: IntersectionPoint): MySvg[] {
   const newSvg1 = new MySvg(
     null,
     svg.cmds,
-    'orange',
+    null,
     'orange',
     svg.pos.copy().add(vec2(0, 0)),
     svg.velocity.copy(),
@@ -22,7 +22,7 @@ export function createNewSvgs(svg: MySvg, p: IntersectionPoint): MySvg[] {
   const newSvg2 = new MySvg(
     null,
     svg.cmds,
-    'gray',
+    null,
     'gray',
     svg.pos.copy().add(vec2(0, 0), svg.velocity.copy(), svg.size.copy(), svg.getGravityScale())
   );

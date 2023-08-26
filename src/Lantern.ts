@@ -1,9 +1,10 @@
 import { vec2, mainContext, canvasFixedSize, gravity } from 'littlejsengine/build/littlejs.esm.min';
 
 import { MySvg } from './MySvg';
-import { red } from './colors';
 import { lanternBodyPath, lanternTipPath } from './svgPaths';
 import { handleSvgCollisions } from './handleSvgCollisions';
+import { ColorToSliceType } from './ColorToSliceType';
+import { getColorFromSliceColor, getSecondaryColorFromSliceColor } from './colorUtils';
 
 export class Lantern {
   svgBody: MySvg;
@@ -14,12 +15,22 @@ export class Lantern {
   pos: vec2 = vec2(0, 0);
   velocity: vec2 = vec2(0, 0);
   gravitationScale = -1.4;
-  constructor(startPos = vec2(0, canvasFixedSize.y)) {
-    this.svgBody = new MySvg(lanternBodyPath, null, red, red, vec2(startPos.x, startPos.y), vec2(0, 0), vec2(39, 77));
+  sliceColor: ColorToSliceType;
+  constructor(startPos = vec2(0, canvasFixedSize.y), sliceColor: ColorToSliceType, velocity = vec2(1, 0)) {
+    this.sliceColor = sliceColor;
+    this.svgBody = new MySvg(
+      lanternBodyPath,
+      null,
+      sliceColor,
+      getColorFromSliceColor(sliceColor),
+      vec2(startPos.x, startPos.y),
+      vec2(0, 0),
+      vec2(39, 77)
+    );
     this.svgTipTop = new MySvg(
       lanternTipPath,
       null,
-      'black',
+      null,
       'black',
       vec2(startPos.x + 9, startPos.y - 4),
       vec2(0, 0),
@@ -28,7 +39,7 @@ export class Lantern {
     this.svgTipBot = new MySvg(
       lanternTipPath,
       null,
-      'black',
+      null,
       'black',
       vec2(startPos.x + 9, startPos.y + 74),
       vec2(0, 0),
@@ -37,7 +48,7 @@ export class Lantern {
     // The outer circle is at x=100, y=100, with radius=70
 
     this.centerPos = vec2(startPos.x + 19, startPos.y + 40); // make up for height and width as well
-    this.velocity = vec2(1, 0);
+    this.velocity = velocity;
     this.getSvgs().forEach((svg) => {
       svg.setGravityScale(0);
     });
@@ -74,12 +85,12 @@ export class Lantern {
     this.getSvgs().forEach((svg) => svg.render(ctx));
     const x = this.centerPos.x + this.pos.x;
     const y = this.centerPos.y + this.pos.y;
-    this.gradient = mainContext.createRadialGradient(x, y, 200, 200, canvasFixedSize.x - 100, 100);
+    this.gradient = mainContext.createRadialGradient(x, y, 100, 200, canvasFixedSize.x - 100, 100);
 
     // Add three color stops
-    this.gradient.addColorStop(0, 'red');
-    this.gradient.addColorStop(0.5, 'orange');
-    this.gradient.addColorStop(1, 'red');
+    this.gradient.addColorStop(0, getSecondaryColorFromSliceColor(this.sliceColor));
+    this.gradient.addColorStop(0.5, getColorFromSliceColor(this.sliceColor));
+    this.gradient.addColorStop(1, getSecondaryColorFromSliceColor(this.sliceColor));
     this.svgBody.fill = this.gradient;
     ctx.restore();
     // this.debugCenterPoint(ctx);

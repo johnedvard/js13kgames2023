@@ -80,21 +80,21 @@ export class MainMenu {
 
   private createS(startOffset = vec2(0, 0)) {
     const offsetX = startOffset.x;
-    const s1 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const s1 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
     s1.rotateSvg(10);
     s1.rotateSvg(10);
     s1.rotateSvg(10);
     s1.rotateSvg(10);
     s1.rotateSvg(5);
     s1.translateSvg(vec2(140 + offsetX, 100));
-    const s2 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const s2 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
     s2.rotateSvg(-10);
     s2.rotateSvg(-10);
     s2.rotateSvg(-10);
     s2.rotateSvg(-10);
     s2.rotateSvg(-5);
     s2.translateSvg(vec2(50 + offsetX, 160));
-    const s3 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const s3 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
     s3.rotateSvg(10);
     s3.rotateSvg(10);
     s3.rotateSvg(10);
@@ -105,15 +105,15 @@ export class MainMenu {
   }
   createA(startOffset = vec2(0, 0)) {
     const offsetX = startOffset.x;
-    const a1 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const a1 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
     a1.rotateSvg(10);
     a1.rotateSvg(10);
     a1.translateSvg(vec2(220 + offsetX, 150));
-    const a2 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const a2 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
     a2.rotateSvg(-10);
     a2.rotateSvg(-10);
     a2.translateSvg(vec2(230 + offsetX, 160));
-    const a3 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const a3 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
     for (let i = 0; i < 8; i++) {
       a3.rotateSvg(10);
     }
@@ -123,32 +123,32 @@ export class MainMenu {
   }
   createM(startOffset = vec2(0, 0)) {
     const offsetX = startOffset.x;
-    const m1 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const m1 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
     m1.translateSvg(vec2(320 + offsetX, 150));
-    const m2 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const m2 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
     m2.rotateSvg(-10);
     m2.rotateSvg(-10);
     m2.rotateSvg(-5);
     m2.translateSvg(vec2(330 + offsetX, 150));
-    const m3 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const m3 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
     m3.rotateSvg(10);
     m3.rotateSvg(10);
     m3.rotateSvg(5);
     m3.translateSvg(vec2(430 + offsetX, 150));
-    const m4 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const m4 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
     m4.translateSvg(vec2(435 + offsetX, 150));
     return [m1, m2, m3, m4];
   }
 
   createP() {
-    const p1 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
-    const p2 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const p1 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
+    const p2 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
 
     for (let i = 0; i < 5; i++) {
       p2.rotateSvg(-10);
     }
     p2.translateSvg(vec2(-20, -5));
-    const p3 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const p3 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
 
     for (let i = 0; i < 5; i++) {
       p3.rotateSvg(10);
@@ -159,8 +159,8 @@ export class MainMenu {
   }
 
   createL() {
-    const l1 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
-    const l2 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const l1 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
+    const l2 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
 
     for (let i = 0; i < 17; i++) {
       l2.rotateSvg(5);
@@ -169,8 +169,8 @@ export class MainMenu {
     return [l1, l2];
   }
   createY() {
-    const y1 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
-    const y2 = new MySvg(bambooPath, null, red, red, vec2(0, 0));
+    const y1 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
+    const y2 = new MySvg(bambooPath, null, 'r', red, vec2(0, 0));
 
     for (let i = 0; i < 3; i++) {
       y1.rotateSvg(10);
