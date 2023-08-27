@@ -24,9 +24,8 @@ export class Level {
   nextColorToSlice: ColorToSliceType = 'b';
   maxColorSize = 6;
   ellapsedTime = 0;
-  duration = 3;
   currentWave = 0;
-  sliceColorMaxLifeTime = 5; // how long the current slice color is active
+  sliceColorMaxLifeTime = 4; // how long the current slice color is active
   currentSliceColorEllapseTime = 0;
   waveDuration = 3;
   currentWaveEllapseTime = 0;
@@ -74,6 +73,7 @@ export class Level {
   }
 
   updateColorToSlice() {
+    if (this.ellapsedPlayTime == 0) return;
     this.currentSliceColorEllapseTime += timeDelta;
     if (this.currentSliceColorEllapseTime >= this.sliceColorMaxLifeTime) {
       this.currentSliceColorEllapseTime = 0;
@@ -94,7 +94,7 @@ export class Level {
     ctx.beginPath();
     ctx.fillStyle = getColorFromSliceColor(this.currentColorToSlice);
     let centerPos = vec2(canvasFixedSize.x / 2, 50);
-    const radius = smoothstep(10, 5, 0.5 + Math.sin(this.ellapsedTime * 3) / 2);
+    const radius = smoothstep(10, 5, 0.5 + Math.sin(this.ellapsedPlayTime * 3) / 2);
     let outerRadius = 6;
     let innerRadius = 0;
     ctx.moveTo(centerPos.x, centerPos.y);
@@ -106,7 +106,7 @@ export class Level {
     // animate next color coming
     ctx.beginPath();
     ctx.fillStyle = getColorFromSliceColor(this.nextColorToSlice);
-    const distance = this.ellapsedTime % this.sliceColorMaxLifeTime;
+    const distance = this.ellapsedPlayTime % this.sliceColorMaxLifeTime;
     const travelled = smoothstep(0, canvasFixedSize.x / 2, distance / this.sliceColorMaxLifeTime);
     centerPos = vec2(canvasFixedSize.x - travelled, 50);
     outerRadius = 1;
@@ -131,7 +131,7 @@ export class Level {
     }
 
     ctx.beginPath();
-    const radius = smoothstep(10, 5, 0.5 + Math.sin(this.ellapsedTime * 3) / 2);
+    const radius = smoothstep(10, 5, 0.5 + Math.sin(this.ellapsedPlayTime * 3) / 2);
     const outerRadius = isFirstCircle ? 6 : 1;
     const innerRadius = isFirstCircle ? 0 : radius / 1.5;
     ctx.moveTo(centerPos.x, centerPos.y);
@@ -142,7 +142,7 @@ export class Level {
     ctx.restore();
   }
   start() {
-    // this.music.play();
+    this.music.play();
   }
 
   getRandomSliceColor() {
@@ -175,7 +175,7 @@ export class Level {
       }
     }
     if (this.currentWave == 5) {
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 3; i++) {
         this.arrows.push(new Arrow(vec2(i * 10 + Math.random() * 900, -300 + i * (Math.random() * 20))));
       }
     }

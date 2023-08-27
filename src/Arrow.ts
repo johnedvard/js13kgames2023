@@ -1,7 +1,7 @@
 import { vec2, timeDelta } from 'littlejsengine/build/littlejs.esm.min';
 
 import { MySvg } from './MySvg';
-import { yellow } from './colors';
+import { pink, yellow } from './colors';
 import { arrowFeatherPath, arrowFlamePath, arrowPath } from './svgPaths';
 import { handleSvgCollisions } from './handleSvgCollisions';
 import { Cmd } from './types/Cmd';
@@ -31,8 +31,8 @@ export class Arrow {
   update() {
     this.getSvgs().forEach((s) => s.update());
     if (this.arrowFeatherSvg.isCut()) {
-      this.arrowFeatherSvg.children[0].fill = 'purple';
-      this.arrowFeatherSvg.children[1].fill = 'pink';
+      this.arrowFeatherSvg.children[0].fill = yellow;
+      this.arrowFeatherSvg.children[1].fill = pink;
       this.arrowFeatherSvg.children[0].velocity.x = 2;
       this.arrowFeatherSvg.children[1].velocity.x = -2;
       this.arrowFeatherSvg.children[0].setGravityScale(15);
