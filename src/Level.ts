@@ -11,6 +11,7 @@ import { emit, on } from './gameEvents';
 import { getColorFromSliceColor } from './colorUtils';
 import { bambooPath } from './svgPaths';
 import { handleSvgCollisions } from './handleSvgCollisions';
+import { SceneManager } from './SceneManager';
 
 export class Level {
   arrows: Arrow[] = [];
@@ -29,7 +30,8 @@ export class Level {
   currentSliceColorEllapseTime = 0;
   waveDuration = 3;
   currentWaveEllapseTime = 0;
-  constructor() {
+
+  constructor(private sceneManager: SceneManager) {
     this.music = new Music(song);
     // start first wave in constructor
     for (let i = 0; i < 2; i++) {
@@ -39,6 +41,7 @@ export class Level {
     on('wave', this.onNewWave);
   }
   onSplit = (evt) => {
+    if (this.sceneManager.currentScene != 'l') return;
     console.log('evt', evt.detail.data);
     const slicedColor = evt?.detail?.data?.sliceColor;
     if (!slicedColor) return; // slicing is OK regardless of sliceColor
@@ -158,6 +161,7 @@ export class Level {
   }
 
   onNewWave = (evt) => {
+    if (this.sceneManager.currentScene != 'l') return;
     console.log('onNew wave', evt?.detail?.data);
     console.log('onNew wave', this.currentWave);
     if (this.currentWave == 1) {

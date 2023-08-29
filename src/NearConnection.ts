@@ -1,12 +1,11 @@
+import { SwordDataType } from './SwordDataType';
 import { getConfig } from './nearConfig';
 
 export const SERIES_ID_LIGHT_SABER = '497912';
 export const SERIES_ID_HALO_SABER = '497913';
 export const IPFS_BASE_PATH = 'https://ipfs.fleek.co/ipfs/';
-export const PARAS_COLLECTION_API =
-  'https://api-v2-mainnet.paras.id/token-series?collection_id=samurai-sam-by-johnedvardnear';
-// https://paras.id/collection/samurai-sam-by-johnedvardnear
-export const lightSaberData = {
+
+export const lightSaberData: SwordDataType = {
   name: 'light-saber',
   isOwned: false,
   token_series_id: SERIES_ID_LIGHT_SABER,
@@ -14,7 +13,7 @@ export const lightSaberData = {
   nearPrice: '0.1',
 };
 
-export const haloSaberData = {
+export const haloSaberData: SwordDataType = {
   name: 'light-saber',
   isOwned: false,
   token_series_id: SERIES_ID_HALO_SABER,
@@ -101,13 +100,4 @@ export class NearConnection {
     console.log('account_id', account_id);
     return this.contract['nft_tokens_for_owner']({ account_id });
   };
-  getNftCollections() {
-    let api = PARAS_COLLECTION_API;
-    if (window.location.hostname.match('localhost')) api = '/api';
-    return fetch(api)
-      .then((res) => res.json())
-      .then((res) => {
-        return res.data.results.filter((data) => data.metadata.copies > 0 && !data.is_non_mintable);
-      });
-  }
 }

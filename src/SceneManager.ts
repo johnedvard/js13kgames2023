@@ -14,9 +14,9 @@ export class SceneManager {
 
   constructor() {
     // TODO (johnedvard) create level or main menu depending on current scene instead
-    this.mainMenu = new MainMenu();
-    this.level = new Level();
-    this.web3Scene = new Web3Scene();
+    this.mainMenu = new MainMenu(this);
+    this.level = new Level(this);
+    this.web3Scene = new Web3Scene(this);
     on('play', this.onPlay);
     on('web3', this.onWeb3);
   }
@@ -52,6 +52,7 @@ export class SceneManager {
   onWeb3 = (customEvent: CustomEvent) => {
     if (this.isChangingScenes) return;
     console.log('on web3: ', customEvent);
+
     this.changeScene('w');
   };
 

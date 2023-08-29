@@ -1,6 +1,9 @@
 import { mouseIsDown, mousePosScreen } from 'littlejsengine/build/littlejs.esm.min';
 export const mousePoints = [];
 export const maxDraws = 6;
+let selectedDrawColor = 'white';
+let equippedDrawColor = 'white';
+let isUseSelectedColor = false; // swap between selected and equipped
 
 function removeMouseDraggings() {
   for (let i = mousePoints.length - 1; i >= 0; i--) {
@@ -10,6 +13,11 @@ function removeMouseDraggings() {
   }
 }
 
+function getColorToDraw() {
+  if (isUseSelectedColor) return selectedDrawColor;
+  return equippedDrawColor;
+}
+
 export function drawTouchLine(ctx) {
   if (!mousePoints.length) return;
   // cleanup leftover mouse points
@@ -17,7 +25,7 @@ export function drawTouchLine(ctx) {
     mousePoints[0].draws--;
   }
 
-  ctx.strokeStyle = 'white';
+  ctx.strokeStyle = getColorToDraw();
   for (let i = 0; i < mousePoints.length - 1; i++) {
     const prev = mousePoints[i];
     const next = mousePoints[i + 1];
@@ -42,4 +50,14 @@ export function updateMouseControls() {
     y: pos.y,
     draws: maxDraws,
   }); // add to start of queue
+}
+
+export function setIsUseSelectedColor(value: boolean) {
+  isUseSelectedColor = value;
+}
+export function setSelectedDragColor(color: string) {
+  selectedDrawColor = color;
+}
+export function setEquippedDragColor(color: string) {
+  equippedDrawColor = color;
 }
