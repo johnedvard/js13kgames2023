@@ -6,7 +6,7 @@ export default defineConfig({
     port: 9090,
     proxy: {
       '/api': {
-        target: 'https://api-v2-mainnet.paras.id/token-series?collection_id=samurai-sam-by-johnedvardnear',
+        target: 'http://localhost:9999/.netlify/functions/collection',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },

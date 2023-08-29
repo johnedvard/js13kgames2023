@@ -10,8 +10,8 @@ import { SwordDataType } from './SwordDataType';
 import { loadScript } from './loadScript';
 
 const NEAR_API = 'https://js13kgames.com/src/near-api-js.js';
-export const PARAS_COLLECTION_API =
-  'https://api-v2-mainnet.paras.id/token-series?collection_id=samurai-sam-by-johnedvardnear';
+export const PARAS_COLLECTION_API = 'https://js13kgames2023.netlify.app/.netlify/functions/collection';
+// 'https://api-v2-mainnet.paras.id/token-series?collection_id=samurai-sam-by-johnedvardnear';
 // https://paras.id/collection/samurai-sam-by-johnedvardnear
 
 let nftTokensForOwner;
@@ -80,6 +80,7 @@ function getParasNftCollection(): Promise<INftCollection[]> {
   return fetch(api)
     .then((res) => res.json())
     .then((res) => {
+      console.log('ter', res);
       return res.data.results.filter((data) => data.metadata.copies > 0 && !data.is_non_mintable);
     });
 }
