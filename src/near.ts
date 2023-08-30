@@ -20,8 +20,9 @@ let nearConnection;
 
 function updateNftOwnership(tokens: any[]) {
   tokens.forEach((token) => {
-    if (token.token_id && token.token_id.split(':')[0]) {
-      const tokenSeriesId = token.token_id.split(':')[0];
+    const tokenId = token['token_id'] || '';
+    if (tokenId.split(':')[0]) {
+      const tokenSeriesId = tokenId.split(':')[0];
       switch (tokenSeriesId) {
         case SERIES_ID_HALO_SABER:
           haloSaberData.isOwned = true;
