@@ -37,25 +37,25 @@ export class NearConnection {
   }
 
   isSignedIn() {
-    return this && this.walletConnection && this.walletConnection.isSignedIn();
+    return this && this.walletConnection && this.walletConnection['isSignedIn']();
   }
 
   // Initialize contract & set global variables
   async initContract() {
     // Initialize connection to the NEAR testnet
-    const nearApi = (<any>window).nearApi;
-    const keyStore = new nearApi.keyStores.BrowserLocalStorageKeyStore();
-    const near = await nearApi.connect({ ...this.nearConfig, ['keyStore']: keyStore });
+    const nearApi = (<any>window)['nearApi'];
+    const keyStore = new nearApi['keyStores']['BrowserLocalStorageKeyStore']();
+    const near = await nearApi['connect']({ ...this.nearConfig, ['keyStore']: keyStore });
 
     // Initializing Wallet based Account. It can work with NEAR testnet wallet that
     // is hosted at https://wallet.testnet.near.org
-    this.walletConnection = new nearApi.WalletConnection(near, 'sam');
+    this.walletConnection = new nearApi['WalletConnection'](near, 'sam');
 
     // Getting the Account ID. If still unauthorized, it's just empty string
-    this.accountId = this.walletConnection.getAccountId();
+    this.accountId = this.walletConnection['getAccountId']();
 
     // Initializing our contract APIs by contract name and configuration
-    this.contract = await new nearApi.Contract(this.walletConnection.account(), this.nearConfig.contractName, {
+    this.contract = await new nearApi['Contract'](this.walletConnection['account'](), this.nearConfig['contractName'], {
       // View methods are read only. They don't modify the state, but usually return some value.
       viewMethods: ['nft_tokens_for_owner'],
       // Change methods can modify the state. But you don't receive the returned value when called.
@@ -66,7 +66,7 @@ export class NearConnection {
   }
 
   logout() {
-    this.walletConnection.signOut();
+    this.walletConnection['signOut']();
     // reload page
   }
   login() {
@@ -74,11 +74,11 @@ export class NearConnection {
     // user's behalf.
     // This works by creating a new access key for the user's account and storing
     // the private key in localStorage.
-    this.walletConnection.requestSignIn(this.nearConfig.contractName);
+    this.walletConnection['requestSignIn'](this.nearConfig['contractName']);
   }
   getAccountId = () => {
     // Getting the Account ID. If still unauthorized, it's just empty string
-    return this.walletConnection.getAccountId();
+    return this.walletConnection['getAccountId']();
   };
 
   nftBuy({ token_series_id, priceInYoctoNear }) {
