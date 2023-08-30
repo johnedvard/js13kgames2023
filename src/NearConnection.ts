@@ -48,7 +48,7 @@ export class NearConnection {
 
     // Initializing Wallet based Account. It can work with NEAR testnet wallet that
     // is hosted at https://wallet.testnet.near.org
-    this.walletConnection = new (<any>window).nearApi.WalletConnection(near, null);
+    this.walletConnection = new (<any>window).nearApi.WalletConnection(near, 'sam');
 
     // Getting the Account ID. If still unauthorized, it's just empty string
     this.accountId = this.walletConnection.getAccountId();
