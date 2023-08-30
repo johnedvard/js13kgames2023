@@ -43,27 +43,24 @@ export class NearConnection {
   // Initialize contract & set global variables
   async initContract() {
     // Initialize connection to the NEAR testnet
-    const keyStore = new (<any>window).nearApi.keyStores.BrowserLocalStorageKeyStore();
-    const near = await (<any>window).nearApi.connect({ ...this.nearConfig, keyStore });
+    const nearApi = (<any>window).nearApi;
+    const keyStore = new nearApi.keyStores.BrowserLocalStorageKeyStore();
+    const near = await nearApi.connect({ ...this.nearConfig, ['keyStore']: keyStore });
 
     // Initializing Wallet based Account. It can work with NEAR testnet wallet that
     // is hosted at https://wallet.testnet.near.org
-    this.walletConnection = new (<any>window).nearApi.WalletConnection(near, 'sam');
+    this.walletConnection = new nearApi.WalletConnection(near, 'sam');
 
     // Getting the Account ID. If still unauthorized, it's just empty string
     this.accountId = this.walletConnection.getAccountId();
 
     // Initializing our contract APIs by contract name and configuration
-    this.contract = await new (<any>window).nearApi.Contract(
-      this.walletConnection.account(),
-      this.nearConfig.contractName,
-      {
-        // View methods are read only. They don't modify the state, but usually return some value.
-        viewMethods: ['nft_tokens_for_owner'],
-        // Change methods can modify the state. But you don't receive the returned value when called.
-        changeMethods: ['nft_buy'],
-      }
-    );
+    this.contract = await new nearApi.Contract(this.walletConnection.account(), this.nearConfig.contractName, {
+      // View methods are read only. They don't modify the state, but usually return some value.
+      viewMethods: ['nft_tokens_for_owner'],
+      // Change methods can modify the state. But you don't receive the returned value when called.
+      changeMethods: ['nft_buy'],
+    });
     this.resolveContract();
     return this.walletConnection;
   }
