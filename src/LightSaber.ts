@@ -9,15 +9,15 @@ export class LightSaber {
   swordPart1Svg: MySvg;
 
   constructor(collection: INftCollection) {
-    collection.metadata.attributes.forEach((a) => {
-      switch (a.trait_type) {
+    collection['metadata']['attributes'].forEach((a) => {
+      switch (a['trait_type']) {
         case 'Handle':
-          this.handleSvg = new MySvg(a.value, null, null, 'white');
+          this.handleSvg = new MySvg(a['value'], null, null, 'white');
           this.handleSvg.setGravityScale(0);
           this.handleSvg.translateSvg(vec2(-20, 94));
           break;
         case 'Sword part1':
-          this.swordPart1Svg = new MySvg(a.value, null, null, lightBlue);
+          this.swordPart1Svg = new MySvg(a['value'], null, null, lightBlue);
           this.swordPart1Svg.setGravityScale(0);
           break;
       }
