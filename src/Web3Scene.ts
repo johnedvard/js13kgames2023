@@ -120,7 +120,7 @@ export class Web3Scene {
   onSplit = (evt) => {
     if (this.sceneManager.currentScene != 'w') return;
     this.playBtn.forEach((svg) => {
-      if (this.isEventInProgress) return;
+      if (this.isEventInProgress || !svg) return;
       if (svg == evt.detail.data) {
         this.isEventInProgress = true;
         setIsUseSelectedColor(false); // use the equipped color instead

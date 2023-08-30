@@ -11,7 +11,6 @@ export class MainMenu {
   letters: MySvg[] = [];
   playButton: MySvg[] = [];
   web3Button: MySvg[] = [];
-  startButton: MySvg;
   ellapsedTime = 0;
 
   constructor(private sceneManager: SceneManager) {
