@@ -97,7 +97,6 @@ export class NearConnection {
   }
   getNftTokensForOwner = (account_id?: string) => {
     if (!account_id) account_id = this.getAccountId();
-    console.log('account_id', account_id);
     return this.contract['nft_tokens_for_owner']({ account_id });
   };
 }

@@ -42,7 +42,6 @@ export class Level {
   }
   onSplit = (evt) => {
     if (this.sceneManager.currentScene != 'l') return;
-    console.log('evt', evt.detail.data);
     const slicedColor = evt?.detail?.data?.sliceColor;
     if (!slicedColor) return; // slicing is OK regardless of sliceColor
     if (slicedColor == this.currentColorToSlice) {

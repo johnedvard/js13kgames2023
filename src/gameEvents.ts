@@ -8,7 +8,6 @@ const web3Event = new CustomEvent('web3', { detail: { data: {} } });
 
 export function emit(eventType: EventType, data?: any) {
   splitEvent.detail.data = data;
-  console.log('eventType', eventType);
   window.dispatchEvent(getEvent(eventType));
 }
 export function on(eventType: EventType, callback) {
