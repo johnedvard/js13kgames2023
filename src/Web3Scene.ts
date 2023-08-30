@@ -120,23 +120,27 @@ export class Web3Scene {
   onSplit = (evt) => {
     if (this.sceneManager.currentScene != 'w') return;
     this.playBtn.forEach((svg) => {
-      if (this.isEventInProgress || !svg) return;
+      if (this.isEventInProgress) return;
       if (svg == evt.detail.data) {
         this.isEventInProgress = true;
         setIsUseSelectedColor(false); // use the equipped color instead
         emit('play');
       }
     });
-    this.lightSaber.getSvgs().forEach((svg) => {
-      if (svg == evt.detail.data) {
-        setSelectedDragColor(lightBlue);
-      }
-    });
-    this.haloSaber.getSvgs().forEach((svg) => {
-      if (svg == evt.detail.data) {
-        setSelectedDragColor(darkPink);
-      }
-    });
+    if (this.lightSaber) {
+      this.lightSaber.getSvgs().forEach((svg) => {
+        if (svg == evt.detail.data) {
+          setSelectedDragColor(lightBlue);
+        }
+      });
+    }
+    if (this.haloSaber) {
+      this.haloSaber.getSvgs().forEach((svg) => {
+        if (svg == evt.detail.data) {
+          setSelectedDragColor(darkPink);
+        }
+      });
+    }
     this.loginBtn.forEach((svg) => {
       if (this.isEventInProgress) return;
       if (svg == evt.detail.data) {
