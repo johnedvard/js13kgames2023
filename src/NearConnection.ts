@@ -57,9 +57,9 @@ export class NearConnection {
     // Initializing our contract APIs by contract name and configuration
     this.contract = await new nearApi['Contract'](this.walletConnection['account'](), this.nearConfig['contractName'], {
       // View methods are read only. They don't modify the state, but usually return some value.
-      viewMethods: ['nft_tokens_for_owner'],
+      ['viewMethods']: ['nft_tokens_for_owner'],
       // Change methods can modify the state. But you don't receive the returned value when called.
-      changeMethods: ['nft_buy'],
+      ['changeMethods']: ['nft_buy'],
     });
     this.resolveContract();
     return this.walletConnection;
@@ -84,9 +84,9 @@ export class NearConnection {
   nftBuy({ token_series_id, priceInYoctoNear }) {
     return this.contract['nft_buy'](
       {
-        owner_id: this.getAccountId(),
-        receiver_id: this.getAccountId(),
-        token_series_id,
+        ['owner_id']: this.getAccountId(),
+        ['receiver_id']: this.getAccountId(),
+        ['token_series_id']: token_series_id,
       },
       '300000000000000',
       priceInYoctoNear
