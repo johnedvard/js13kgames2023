@@ -76,7 +76,9 @@ export function isLoggedIn() {
 
 function getParasNftCollection(): Promise<INftCollection[]> {
   let api = PARAS_COLLECTION_API;
+  console.log('hoistname', window.location.hostname);
   if (window.location.hostname.match('localhost')) api = '/api';
+  if (window.location.hostname.match('js13kgames2023.netlify')) api = '/.netlify/functions/collection';
   return fetch(api)
     .then((res) => res.json())
     .then((res) => {

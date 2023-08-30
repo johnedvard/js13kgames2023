@@ -186,7 +186,7 @@ export class Web3Scene {
 
   async initWeapons() {
     const [nftCollection] = await Promise.all([getNftCollection()]);
-
+    console.log('nftCollection', nftCollection);
     nftCollection.forEach((c: INftCollection) => {
       switch (c.token_series_id) {
         case SERIES_ID_LIGHT_SABER:
