@@ -1,4 +1,4 @@
-import { vec2, timeDelta } from 'littlejsengine/build/littlejs.esm.min';
+import { vec2, timeDelta } from 'littlejsengine/build/littlejs.esm';
 
 import { MySvg } from './MySvg';
 import { pink, yellow } from './colors';
@@ -51,7 +51,7 @@ export class Arrow {
       c1.setScale(0.95);
     }
     this.updateFlameAnim();
-    handleSvgCollisions(this.arrowFeatherSvg, 0.1);
+    handleSvgCollisions(this.arrowFeatherSvg, 1);
     handleSvgCollisions(this.arrowSvg, 0.1);
   }
 

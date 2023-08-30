@@ -1,4 +1,4 @@
-import { vec2, canvasFixedSize, timeDelta } from 'littlejsengine/build/littlejs.esm.min';
+import { vec2, canvasFixedSize, timeDelta } from 'littlejsengine/build/littlejs.esm';
 
 import { MySvg } from './MySvg';
 import { handleSvgCollisions } from './handleSvgCollisions';

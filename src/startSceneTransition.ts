@@ -1,4 +1,4 @@
-import { timeDelta, overlayContext, canvasFixedSize } from 'littlejsengine/build/littlejs.esm.min';
+import { timeDelta, overlayContext, canvasFixedSize } from 'littlejsengine/build/littlejs.esm';
 
 import { off, on } from './gameEvents';
 

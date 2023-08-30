@@ -5,12 +5,9 @@ import {
   mainContext,
   setCanvasFixedSize,
   canvasFixedSize,
-} from 'littlejsengine/build/littlejs.esm.min';
+} from 'littlejsengine/build/littlejs.esm';
 
 import { drawTouchLine, updateMouseControls } from './inputUtils';
-// import { MySvg } from './MySvg';
-import { handleSvgCollisions } from './handleSvgCollisions';
-// import { mongolHemlMainPath, mongolHemlTopPath } from './svgPaths';
 import { black } from './colors';
 import { emit } from './gameEvents';
 import { SceneManager } from './SceneManager';
@@ -27,7 +24,6 @@ import { SceneManager } from './SceneManager';
 //   'M8.394,21.62C5.193,21.62 -1.718,4.029 0.394,1.62C2.507,-0.788 13.587,-0.277 14.394,1.62C15.202,3.517 16.306,13.099 15.394,13.62C14.483,14.141 8.894,21.62 8.394,21.62Z';
 // const kabutoCap =
 //   'M26.448,0.401C4.138,0.69 3.298,-2.068 0.448,4.401C-2.402,10.87 8.62,15.563 25.997,15.401C44.354,15.23 54.61,12.374 52.448,5.373C50.286,-1.628 48.757,0.112 26.448,0.401Z';
-let svgs = [];
 let sceneManager: SceneManager;
 function gameInit() {
   setGravity(-0.01);
@@ -44,33 +40,12 @@ function gameInit() {
   // const kabutoEarLSvg = new MySvg(kabutoEarL, null, 'gold', 'gold', vec2(174, 155));
   // const kabutoEarRSvg = new MySvg(kabutoEarR, null, 'gold', 'gold', vec2(110, 155));
   // const kabutoCapSvg = new MySvg(kabutoCap, null, 'orange', 'orange', vec2(123, 166));
-
-  svgs
-    .push
-    // bambooSvg,
-    // mongolHelmTop,
-    // mongolHelmMain
-
-    // bambooSvg1,
-    // bambooSvg2,
-    // bambooSvg3
-    // kabutoEmblemSvg,
-    // kabutoHelmFrontSvg,
-    // kabutoEarLSvg,
-    // kabutoHelmBackSvg,
-    // kabutoEarRSvg,
-    // kabutoCapSvg
-    ();
 }
 
 function gameUpdate() {
   emit('tick');
   updateMouseControls();
   sceneManager.update();
-  svgs.forEach((svg) => {
-    svg.update();
-    handleSvgCollisions(svg);
-  });
 }
 
 function gameUpdatePost() {
@@ -84,7 +59,6 @@ function gameRender() {
 
   const ctx = mainContext;
   drawBackground(ctx);
-  svgs.forEach((svg) => svg.render(ctx));
   sceneManager.render(ctx);
 
   drawTouchLine(ctx);

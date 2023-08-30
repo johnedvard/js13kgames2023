@@ -1,4 +1,4 @@
-import { vec2, timeDelta } from 'littlejsengine/build/littlejs.esm.min';
+import { vec2, timeDelta } from 'littlejsengine/build/littlejs.esm';
 
 import { MySvg } from './MySvg';
 import { smoothstep } from './smoothstep';

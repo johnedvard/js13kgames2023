@@ -1,4 +1,4 @@
-import { vec2, canvasFixedSize } from 'littlejsengine/build/littlejs.esm.min';
+import { vec2, canvasFixedSize } from 'littlejsengine/build/littlejs.esm';
 
 import { MySvg } from './MySvg';
 import { bambooPath } from './svgPaths';

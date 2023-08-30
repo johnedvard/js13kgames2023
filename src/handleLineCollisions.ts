@@ -1,4 +1,4 @@
-import { vec2 } from 'littlejsengine/build/littlejs.esm.min';
+import { vec2 } from 'littlejsengine/build/littlejs.esm';
 
 import { getCubicControlPoints } from './getCubicControlPoints';
 import { mousePoints, maxDraws } from './inputUtils';

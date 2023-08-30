@@ -1,10 +1,11 @@
-export type EventType = 'tick' | 'split' | 'play' | 'wave' | 'web3';
+export type EventType = 'tick' | 'split' | 'play' | 'wave' | 'web3' | 'killed';
 
 const tickEvent = new CustomEvent('tick');
 const playEvent = new CustomEvent('play');
 const splitEvent = new CustomEvent('split', { detail: { data: {} } });
 const waveEvent = new CustomEvent('wave', { detail: { data: {} } });
 const web3Event = new CustomEvent('web3', { detail: { data: {} } });
+const killedEvent = new CustomEvent('killed', { detail: { data: {} } });
 
 export function emit(eventType: EventType, data?: any) {
   splitEvent.detail.data = data;
@@ -29,5 +30,7 @@ function getEvent(eventType: EventType) {
       return waveEvent;
     case 'web3':
       return web3Event;
+    case 'killed':
+      return killedEvent;
   }
 }

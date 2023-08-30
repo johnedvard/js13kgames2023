@@ -1,4 +1,4 @@
-import { vec2 } from 'littlejsengine/build/littlejs.esm.min';
+import { vec2 } from 'littlejsengine/build/littlejs.esm';
 
 import { Cmd } from './types/Cmd';
 

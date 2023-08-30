@@ -1,4 +1,4 @@
-import { vec2, canvasFixedSize, Music, timeDelta } from 'littlejsengine/build/littlejs.esm.min';
+import { vec2, canvasFixedSize, Music, timeDelta } from 'littlejsengine/build/littlejs.esm';
 
 import { Arrow } from './Arrow';
 import { Lantern } from './Lantern';
@@ -49,6 +49,7 @@ export class Level {
     } else {
       // loose game (loose life?)
       console.log('killed');
+      emit('killed', {});
     }
   };
   update() {
@@ -159,10 +160,8 @@ export class Level {
     }
   }
 
-  onNewWave = (evt) => {
+  onNewWave = (_evt) => {
     if (this.sceneManager.currentScene != 'l') return;
-    console.log('onNew wave', evt?.detail?.data);
-    console.log('onNew wave', this.currentWave);
     if (this.currentWave == 1) {
       for (let i = 0; i < 2; i++) {
         this.lanterns.push(new Lantern(vec2(600 + i * 146, canvasFixedSize.y + 200), 'b', vec2(-1, 0)));
@@ -174,7 +173,10 @@ export class Level {
         const sliceColor = i ? 'r' : 'b';
         let x = 50 + Math.floor(Math.random() * (canvasFixedSize.x / 2 - 100));
         if (i) x = 50 + canvasFixedSize.x / 2 + Math.floor(Math.random() * (canvasFixedSize.x / 2 - 100));
-        this.bamboos.push(new MySvg(bambooPath, null, sliceColor, getColorFromSliceColor(sliceColor), vec2(x, -200)));
+        const bamboo = new MySvg(bambooPath, null, sliceColor, getColorFromSliceColor(sliceColor));
+        bamboo.setScale(2);
+        bamboo.translateSvg(vec2(x, -300));
+        this.bamboos.push(bamboo);
       }
     }
     if (this.currentWave == 5) {

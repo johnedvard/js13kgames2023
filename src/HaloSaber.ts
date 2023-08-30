@@ -1,4 +1,4 @@
-import { vec2 } from 'littlejsengine/build/littlejs.esm.min';
+import { vec2 } from 'littlejsengine/build/littlejs.esm';
 import { INftCollection } from './INftCollection';
 import { MySvg } from './MySvg';
 import { handleSvgCollisions } from './handleSvgCollisions';

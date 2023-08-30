@@ -1,4 +1,4 @@
-import { vec2, mainContext } from 'littlejsengine/build/littlejs.esm.min';
+import { vec2, mainContext } from 'littlejsengine/build/littlejs.esm';
 
 export class Sakura {
   gradient: CanvasGradient;

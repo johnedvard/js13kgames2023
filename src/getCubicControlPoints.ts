@@ -1,4 +1,4 @@
-import { vec2 } from 'littlejsengine/build/littlejs.esm.min';
+import { vec2 } from 'littlejsengine/build/littlejs.esm';
 
 export function getCubicControlPoints(
   x0: number,

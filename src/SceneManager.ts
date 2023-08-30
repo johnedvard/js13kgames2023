@@ -1,15 +1,17 @@
+import { GameOverScene } from './GameOverScene';
 import { Level } from './Level';
 import { MainMenu } from './MainMenu';
 import { Web3Scene } from './Web3Scene';
 import { on } from './gameEvents';
 import { startSceneTransition } from './startSceneTransition';
 
-type SceneType = 'm' | 'l' | 'w' | '';
+type SceneType = 'm' | 'l' | 'w' | 'g' | '';
 export class SceneManager {
   currentScene: SceneType = 'm';
   mainMenu: MainMenu;
   level: Level;
   web3Scene: Web3Scene;
+  gameOverScene: GameOverScene;
   isChangingScenes = false;
 
   constructor() {
@@ -17,8 +19,10 @@ export class SceneManager {
     this.mainMenu = new MainMenu(this);
     this.level = new Level(this);
     this.web3Scene = new Web3Scene(this);
+    this.gameOverScene = new GameOverScene(this);
     on('play', this.onPlay);
     on('web3', this.onWeb3);
+    on('killed', this.onKilled);
   }
 
   changeScene(sceneType: SceneType) {
@@ -43,16 +47,18 @@ export class SceneManager {
     startSceneTransition(1.5, onMiddle, onEnded);
   }
 
-  onPlay = (customEvent: CustomEvent) => {
+  onKilled = (_customEvent: CustomEvent) => {
     if (this.isChangingScenes) return;
-    console.log('on play: ', customEvent);
+    this.changeScene('g');
+  };
+
+  onPlay = (_customEvent: CustomEvent) => {
+    if (this.isChangingScenes) return;
     this.changeScene('l');
   };
 
-  onWeb3 = (customEvent: CustomEvent) => {
+  onWeb3 = (_customEvent: CustomEvent) => {
     if (this.isChangingScenes) return;
-    console.log('on web3: ', customEvent);
-
     this.changeScene('w');
   };
 
@@ -64,6 +70,8 @@ export class SceneManager {
         return this.level.update();
       case 'w':
         return this.web3Scene.update();
+      case 'g':
+        return this.gameOverScene.update();
     }
   }
   render(ctx) {
@@ -74,6 +82,8 @@ export class SceneManager {
         return this.level.render(ctx);
       case 'w':
         return this.web3Scene.render(ctx);
+      case 'g':
+        return this.gameOverScene.render(ctx);
     }
   }
 }

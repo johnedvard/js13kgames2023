@@ -1,4 +1,4 @@
-import { vec2 } from 'littlejsengine/build/littlejs.esm.min';
+import { vec2 } from 'littlejsengine/build/littlejs.esm';
 
 /**
  * get a coordinate on the cubic bezier curve
