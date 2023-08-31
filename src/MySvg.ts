@@ -1,4 +1,4 @@
-import { vec2, EngineObject, gravity } from 'littlejsengine/build/littlejs.esm';
+import { vec2, EngineObject, gravity } from './littlejs';
 
 import { parseSvg } from './parseSvg';
 

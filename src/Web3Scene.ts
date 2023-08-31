@@ -1,4 +1,4 @@
-import { vec2, canvasFixedSize } from 'littlejsengine/build/littlejs.esm';
+import { vec2, canvasFixedSize } from './littlejs';
 
 import { HaloSaber } from './HaloSaber';
 import { INftCollection } from './INftCollection';

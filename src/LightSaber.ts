@@ -1,4 +1,4 @@
-import { vec2 } from 'littlejsengine/build/littlejs.esm';
+import { vec2 } from './littlejs';
 import { INftCollection } from './INftCollection';
 import { MySvg } from './MySvg';
 import { lightBlue } from './colors';

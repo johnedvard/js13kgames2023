@@ -1,4 +1,4 @@
-import { canvasFixedSize } from 'littlejsengine/build/littlejs.esm';
+import { canvasFixedSize } from './littlejs';
 
 import { SceneManager } from './SceneManager';
 import { MySvg } from './MySvg';

@@ -1,4 +1,4 @@
-import { vec2, mainContext, canvasFixedSize, gravity } from 'littlejsengine/build/littlejs.esm';
+import { vec2, mainContext, canvasFixedSize, gravity } from './littlejs';
 
 import { MySvg } from './MySvg';
 import { lanternBodyPath, lanternTipPath } from './svgPaths';

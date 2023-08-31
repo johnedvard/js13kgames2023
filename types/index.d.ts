@@ -1,5 +1,5 @@
 // copied from build
-declare module 'littlejsengine/build/littlejs.esm' {
+declare module 'littlejs' {
   /**
    * LittleJS Module Export
    * <br> - Export engine as a module with extra functions where necessary

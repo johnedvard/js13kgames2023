@@ -1,4 +1,4 @@
-import { vec2 } from 'littlejsengine/build/littlejs.esm';
+import { vec2 } from './littlejs';
 
 import { splitCubicCurve } from './splitCubicCurve';
 import { Cmd } from './types/Cmd';

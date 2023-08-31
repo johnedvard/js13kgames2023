@@ -31,6 +31,7 @@ export class NearConnection {
   resolveContract;
 
   constructor() {
+    console.log('asdasdas');
     this.ready = new Promise((resolve) => {
       this.resolveContract = resolve;
     });

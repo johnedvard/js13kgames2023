@@ -1,11 +1,4 @@
-import {
-  vec2,
-  setGravity,
-  engineInit,
-  mainContext,
-  setCanvasFixedSize,
-  canvasFixedSize,
-} from 'littlejsengine/build/littlejs.esm';
+import { vec2, setGravity, engineInit, mainContext, setCanvasFixedSize, canvasFixedSize } from './littlejs';
 
 import { drawTouchLine, updateMouseControls } from './inputUtils';
 import { black } from './colors';

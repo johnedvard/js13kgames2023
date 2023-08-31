@@ -1,4 +1,4 @@
-import { mouseIsDown, mousePosScreen } from 'littlejsengine/build/littlejs.esm';
+import { mouseIsDown, mousePosScreen } from './littlejs';
 export const mousePoints = [];
 export const maxDraws = 6;
 let selectedDrawColor = 'white';

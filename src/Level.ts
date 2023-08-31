@@ -1,4 +1,4 @@
-import { vec2, canvasFixedSize, Music, timeDelta } from 'littlejsengine/build/littlejs.esm';
+import { vec2, canvasFixedSize, Music, timeDelta } from './littlejs';
 
 import { Arrow } from './Arrow';
 import { Lantern } from './Lantern';
