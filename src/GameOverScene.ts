@@ -1,11 +1,10 @@
-import { canvasFixedSize } from './littlejs';
+import { canvasFixedSize, vec2 } from './littlejs';
 
 import { SceneManager } from './SceneManager';
 import { MySvg } from './MySvg';
 import { bambooPath } from './svgPaths';
 import { red } from './colors';
 import { handleSvgCollisions } from './handleSvgCollisions';
-import { vec2 } from './myEngine';
 import { on } from './gameEvents';
 
 export class GameOverScene {

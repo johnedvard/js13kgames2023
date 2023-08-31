@@ -19,367 +19,18 @@
  *  @type {Boolean}
  *  @default
  *  @memberof Debug */
-const debug = 1;
-
-/** True if asserts are enaled
- *  @type {Boolean}
- *  @default
- *  @memberof Debug */
-const enableAsserts = 1;
-
-/** Size to render debug points by default
- *  @type {Number}
- *  @default
- *  @memberof Debug */
-const debugPointSize = 0.5;
-
-/** True if watermark with FPS should be shown, false in release builds
- *  @type {Boolean}
- *  @default
- *  @memberof Debug */
-let showWatermark = 1;
-
-/** True if god mode is enabled, handle this however you want
- *  @type {Boolean}
- *  @default
- *  @memberof Debug */
-let godMode = 0;
-
-/** Key code used to toggle debug mode, Esc by default
- *  @type {Boolean}
- *  @default
- *  @memberof Debug */
-let debugKey = 27;
+const debug = 0;
 
 // Engine internal variables not exposed to documentation
-let debugPrimitives = [],
-  debugOverlay = 0,
-  debugPhysics = 0,
-  debugRaycast = 0,
-  debugParticles = 0,
-  debugGamepads = 0,
-  debugMedals = 0,
-  debugTakeScreenshot,
-  downloadLink;
+let debugOverlay = 0,
+  debugPhysics = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Debug helper functions
 
-/** Asserts if the experssion is false, does not do anything in release builds
- *  @param {Boolean} assertion
- *  @param {Object}  output
- *  @memberof Debug */
-const ASSERT = enableAsserts ? (...assert) => console.assert(...assert) : () => {};
-
-/** Draw a debug rectangle in world space
- *  @param {Vector2} pos
- *  @param {Vector2} [size=Vector2()]
- *  @param {String}  [color='#fff']
- *  @param {Number}  [time=0]
- *  @param {Number}  [angle=0]
- *  @param {Boolean} [fill=false]
- *  @memberof Debug */
-const debugRect = (pos, size = vec2(), color = '#fff', time = 0, angle = 0, fill = false) => {
-  ASSERT(typeof color == 'string'); // pass in regular html strings as colors
-  debugPrimitives.push({ pos, size: vec2(size), color, time: new Timer(time), angle, fill });
-};
-
-/** Draw a debug circle in world space
- *  @param {Vector2} pos
- *  @param {Number}  [radius=0]
- *  @param {String}  [color='#fff']
- *  @param {Number}  [time=0]
- *  @param {Boolean} [fill=false]
- *  @memberof Debug */
-const debugCircle = (pos, radius = 0, color = '#fff', time = 0, fill = false) => {
-  ASSERT(typeof color == 'string'); // pass in regular html strings as colors
-  debugPrimitives.push({ pos, size: radius, color, time: new Timer(time), angle: 0, fill });
-};
-
-/** Draw a debug point in world space
- *  @param {Vector2} pos
- *  @param {String}  [color='#fff']
- *  @param {Number}  [time=0]
- *  @param {Number}  [angle=0]
- *  @memberof Debug */
-const debugPoint = (pos, color, time, angle) => debugRect(pos, 0, color, time, angle);
-
-/** Draw a debug line in world space
- *  @param {Vector2} posA
- *  @param {Vector2} posB
- *  @param {String}  [color='#fff']
- *  @param {Number}  [thickness=.1]
- *  @param {Number}  [time=0]
- *  @memberof Debug */
-const debugLine = (posA, posB, color, thickness = 0.1, time) => {
-  const halfDelta = vec2((posB.x - posA.x) / 2, (posB.y - posA.y) / 2);
-  const size = vec2(thickness, halfDelta.length() * 2);
-  debugRect(posA.add(halfDelta), size, color, time, halfDelta.angle(), 1);
-};
-
-/** Draw a debug axis aligned bounding box in world space
- *  @param {Vector2} posA
- *  @param {Vector2} sizeA
- *  @param {Vector2} posB
- *  @param {Vector2} sizeB
- *  @param {String}  [color='#fff']
- *  @memberof Debug */
-const debugAABB = (pA, sA, pB, sB, color) => {
-  const minPos = vec2(min(pA.x - sA.x / 2, pB.x - sB.x / 2), min(pA.y - sA.y / 2, pB.y - sB.y / 2));
-  const maxPos = vec2(max(pA.x + sA.x / 2, pB.x + sB.x / 2), max(pA.y + sA.y / 2, pB.y + sB.y / 2));
-  debugRect(minPos.lerp(maxPos, 0.5), maxPos.subtract(minPos), color);
-};
-
-/** Draw a debug axis aligned bounding box in world space
- *  @param {String}  text
- *  @param {Vector2} pos
- *  @param {Number}  [size=1]
- *  @param {String}  [color='#fff']
- *  @param {Number}  [time=0]
- *  @param {Number}  [angle=0]
- *  @param {String}  [font='monospace']
- *  @memberof Debug */
-const debugText = (text, pos, size = 1, color = '#fff', time = 0, angle = 0, font = 'monospace') => {
-  ASSERT(typeof color == 'string'); // pass in regular html strings as colors
-  debugPrimitives.push({ text, pos, size, color, time: new Timer(time), angle, font });
-};
-
-/** Clear all debug primitives in the list
- *  @memberof Debug */
-const debugClear = () => (debugPrimitives = []);
-
-/** Save a canvas to disk
- *  @param {HTMLCanvasElement} canvas
- *  @param {String}            [filename]
- *  @memberof Debug */
-const debugSaveCanvas = (canvas, filename = engineName + '.png') => {
-  downloadLink.download = 'screenshot.png';
-  downloadLink.href = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
-  downloadLink.click();
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 // Engine debug function (called automatically)
 
-const debugInit = () => {
-  // create link for saving screenshots
-  document.body.appendChild((downloadLink = document.createElement('a')));
-  downloadLink.style.display = 'none';
-};
-
-const debugUpdate = () => {
-  if (!debug) return;
-
-  if (keyWasPressed(debugKey))
-    // Esc
-    debugOverlay = !debugOverlay;
-  if (debugOverlay) {
-    if (keyWasPressed(48))
-      // 0
-      showWatermark = !showWatermark;
-    if (keyWasPressed(49))
-      // 1
-      (debugPhysics = !debugPhysics), (debugParticles = 0);
-    if (keyWasPressed(50))
-      // 2
-      (debugParticles = !debugParticles), (debugPhysics = 0);
-    if (keyWasPressed(51))
-      // 3
-      debugGamepads = !debugGamepads;
-    if (keyWasPressed(52))
-      // 4
-      godMode = !godMode;
-    if (keyWasPressed(53))
-      // 5
-      debugTakeScreenshot = 1;
-    //if (keyWasPressed(54)) // 6
-    //if (keyWasPressed(55)) // 7
-    //if (keyWasPressed(56)) // 8
-    //if (keyWasPressed(57)) // 9
-  }
-};
-
-const debugRender = () => {
-  glCopyToContext(mainContext);
-
-  if (debugTakeScreenshot) {
-    // composite canvas
-    glCopyToContext(mainContext, 1);
-    mainContext.drawImage(overlayCanvas, 0, 0);
-    overlayCanvas.width |= 0;
-
-    debugSaveCanvas(mainCanvas);
-    debugTakeScreenshot = 0;
-  }
-
-  if (debugGamepads && gamepadsEnable && navigator.getGamepads) {
-    // gamepad debug display
-    const gamepads = navigator.getGamepads();
-    for (let i = gamepads.length; i--; ) {
-      const gamepad = gamepads[i];
-      if (gamepad) {
-        const stickScale = 1;
-        const buttonScale = 0.2;
-        const centerPos = cameraPos;
-        const sticks = stickData[i];
-        for (let j = sticks.length; j--; ) {
-          const drawPos = centerPos.add(vec2(j * stickScale * 2, i * stickScale * 3));
-          const stickPos = drawPos.add(sticks[j].scale(stickScale));
-          debugCircle(drawPos, stickScale, '#fff7', 0, 1);
-          debugLine(drawPos, stickPos, '#f00');
-          debugPoint(stickPos, '#f00');
-        }
-        for (let j = gamepad.buttons.length; j--; ) {
-          const drawPos = centerPos.add(vec2(j * buttonScale * 2, i * stickScale * 3 - stickScale - buttonScale));
-          const pressed = gamepad.buttons[j].pressed;
-          debugCircle(drawPos, buttonScale, pressed ? '#f00' : '#fff7', 0, 1);
-          debugText(j, drawPos, 0.2);
-        }
-      }
-    }
-  }
-
-  if (debugOverlay) {
-    const saveContext = mainContext;
-    mainContext = overlayContext;
-
-    // mouse pick
-    let bestDistance = Infinity,
-      bestObject;
-    for (const o of engineObjects) {
-      if (o.canvas || o.destroyed) continue;
-      if (!o.size.x || !o.size.y) continue;
-
-      const distance = mousePos.distanceSquared(o.pos);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestObject = o;
-      }
-
-      // show object info
-      const size = vec2(max(o.size.x, 0.2), max(o.size.y, 0.2));
-      const color1 = new Color(!!o.collideTiles, !!o.collideSolidObjects, !!o.isSolid, o.parent ? 0.2 : 0.5);
-      const color2 = o.parent ? new Color(1, 1, 1, 0.5) : new Color(0, 0, 0, 0.8);
-      drawRect(o.pos, size, color1, o.angle, 0);
-      drawRect(o.pos, size.scale(0.8), color2, o.angle, 0);
-      o.parent && drawLine(o.pos, o.parent.pos, 0.1, new Color(0, 0, 1, 0.5), 0);
-    }
-
-    if (bestObject) {
-      const raycastHitPos = tileCollisionRaycast(bestObject.pos, mousePos);
-      raycastHitPos && drawRect(raycastHitPos.floor().add(vec2(0.5)), vec2(1), new Color(0, 1, 1, 0.3));
-      drawRect(mousePos.floor().add(vec2(0.5)), vec2(1), new Color(0, 0, 1, 0.5), 0, 0);
-      drawLine(mousePos, bestObject.pos, 0.1, raycastHitPos ? new Color(1, 0, 0, 0.5) : new Color(0, 1, 0, 0.5), 0);
-
-      const debugText =
-        'mouse pos = ' +
-        mousePos +
-        '\nmouse collision = ' +
-        getTileCollisionData(mousePos) +
-        '\n\n--- object info ---\n' +
-        bestObject.toString();
-      drawTextScreen(debugText, mousePosScreen, 24, new Color(), 0.05, 0, 0, 'monospace');
-    }
-
-    glCopyToContext((mainContext = saveContext));
-  }
-
-  {
-    // draw debug primitives
-    overlayContext.lineWidth = 2;
-    const pointSize = debugPointSize * cameraScale;
-    debugPrimitives.forEach((p) => {
-      overlayContext.save();
-
-      // create canvas transform from world space to screen space
-      const pos = worldToScreen(p.pos);
-      overlayContext.translate(pos.x | 0, pos.y | 0);
-      overlayContext.rotate(p.angle);
-      overlayContext.fillStyle = overlayContext.strokeStyle = p.color;
-
-      if (p.text != undefined) {
-        overlayContext.font = p.size * cameraScale + 'px ' + p.font;
-        overlayContext.textAlign = 'center';
-        overlayContext.textBaseline = 'middle';
-        overlayContext.fillText(p.text, 0, 0);
-      } else if (p.size == 0 || (p.size.x === 0 && p.size.y === 0)) {
-        // point
-        overlayContext.fillRect(-pointSize / 2, -1, pointSize, 3);
-        overlayContext.fillRect(-1, -pointSize / 2, 3, pointSize);
-      } else if (p.size.x != undefined) {
-        // rect
-        const w = (p.size.x * cameraScale) | 0,
-          h = (p.size.y * cameraScale) | 0;
-        p.fill && overlayContext.fillRect((-w / 2) | 0, (-h / 2) | 0, w, h);
-        overlayContext.strokeRect((-w / 2) | 0, (-h / 2) | 0, w, h);
-      } else {
-        // circle
-        overlayContext.beginPath();
-        overlayContext.arc(0, 0, p.size * cameraScale, 0, 9);
-        p.fill && overlayContext.fill();
-        overlayContext.stroke();
-      }
-
-      overlayContext.restore();
-    });
-
-    // remove expired pritives
-    debugPrimitives = debugPrimitives.filter((r) => r.time < 0);
-  }
-
-  {
-    // draw debug overlay
-    overlayContext.save();
-    overlayContext.fillStyle = '#fff';
-    overlayContext.textAlign = 'left';
-    overlayContext.textBaseline = 'top';
-    overlayContext.font = '28px monospace';
-    overlayContext.shadowColor = '#000';
-    overlayContext.shadowBlur = 9;
-
-    let x = 9,
-      y = -20,
-      h = 30;
-    if (debugOverlay) {
-      overlayContext.fillText(engineName, x, (y += h));
-      overlayContext.fillText('Objects: ' + engineObjects.length, x, (y += h));
-      overlayContext.fillText('Time: ' + formatTime(time), x, (y += h));
-      overlayContext.fillText('---------', x, (y += h));
-      overlayContext.fillStyle = '#f00';
-      overlayContext.fillText('ESC: Debug Overlay', x, (y += h));
-      overlayContext.fillStyle = debugPhysics ? '#f00' : '#fff';
-      overlayContext.fillText('1: Debug Physics', x, (y += h));
-      overlayContext.fillStyle = debugParticles ? '#f00' : '#fff';
-      overlayContext.fillText('2: Debug Particles', x, (y += h));
-      overlayContext.fillStyle = debugGamepads ? '#f00' : '#fff';
-      overlayContext.fillText('3: Debug Gamepads', x, (y += h));
-      overlayContext.fillStyle = godMode ? '#f00' : '#fff';
-      overlayContext.fillText('4: God Mode', x, (y += h));
-      overlayContext.fillStyle = '#fff';
-      overlayContext.fillText('5: Save Screenshot', x, (y += h));
-
-      let keysPressed = '';
-      for (const i in inputData[0]) {
-        if (i && keyIsDown(i, 0)) keysPressed += i + ' ';
-      }
-      keysPressed && overlayContext.fillText('Keys Down: ' + keysPressed, x, (y += h));
-
-      let buttonsPressed = '';
-      if (inputData[1])
-        for (const i in inputData[1]) {
-          if (i && keyIsDown(i, 1)) buttonsPressed += i + ' ';
-        }
-      buttonsPressed && overlayContext.fillText('Gamepad: ' + buttonsPressed, x, (y += h));
-    } else {
-      overlayContext.fillText(debugPhysics ? 'Debug Physics' : '', x, (y += h));
-      overlayContext.fillText(debugParticles ? 'Debug Particles' : '', x, (y += h));
-      overlayContext.fillText(godMode ? 'God Mode' : '', x, (y += h));
-      overlayContext.fillText(debugGamepads ? 'Debug Gamepads' : '', x, (y += h));
-    }
-
-    overlayContext.restore();
-  }
-};
 /**
  * LittleJS Utility Classes and Functions
  * <br> - General purpose math library
@@ -613,7 +264,6 @@ class Vector2 {
    *  @param {Vector2} vector
    *  @return {Vector2} */
   add(v) {
-    ASSERT(isVector2(v));
     return new Vector2(this.x + v.x, this.y + v.y);
   }
 
@@ -621,7 +271,6 @@ class Vector2 {
    *  @param {Vector2} vector
    *  @return {Vector2} */
   subtract(v) {
-    ASSERT(isVector2(v));
     return new Vector2(this.x - v.x, this.y - v.y);
   }
 
@@ -629,7 +278,6 @@ class Vector2 {
    *  @param {Vector2} vector
    *  @return {Vector2} */
   multiply(v) {
-    ASSERT(isVector2(v));
     return new Vector2(this.x * v.x, this.y * v.y);
   }
 
@@ -637,7 +285,6 @@ class Vector2 {
    *  @param {Vector2} vector
    *  @return {Vector2} */
   divide(v) {
-    ASSERT(isVector2(v));
     return new Vector2(this.x / v.x, this.y / v.y);
   }
 
@@ -645,7 +292,6 @@ class Vector2 {
    *  @param {Number} scale
    *  @return {Vector2} */
   scale(s) {
-    ASSERT(!isVector2(s));
     return new Vector2(this.x * s, this.y * s);
   }
 
@@ -695,7 +341,6 @@ class Vector2 {
    * @param {Vector2} vector
    * @return {Number} */
   dot(v) {
-    ASSERT(isVector2(v));
     return this.x * v.x + this.y * v.y;
   }
 
@@ -703,7 +348,6 @@ class Vector2 {
    * @param {Vector2} vector
    * @return {Number} */
   cross(v) {
-    ASSERT(isVector2(v));
     return this.x * v.y - this.y * v.x;
   }
 
@@ -761,7 +405,6 @@ class Vector2 {
    * @param {Number}  percent
    * @return {Vector2} */
   lerp(v, p) {
-    ASSERT(isVector2(v));
     return this.add(v.subtract(this).scale(clamp(p)));
   }
 
@@ -775,13 +418,7 @@ class Vector2 {
   /** Returns this vector expressed as a string
    * @param {float} digits - precision to display
    * @return {String} */
-  toString(digits = 3) {
-    if (debug) {
-      return `(${(this.x < 0 ? '' : ' ') + this.x.toFixed(digits)},${
-        (this.y < 0 ? '' : ' ') + this.y.toFixed(digits)
-      } )`;
-    }
-  }
+  toString(digits = 3) {}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1046,11 +683,7 @@ class Timer {
 
   /** Returns this timer expressed as a string
    * @return {String} */
-  toString() {
-    if (debug) {
-      return this.unset() ? 'unset' : Math.abs(this.get()) + ' seconds ' + (this.get() < 0 ? 'before' : 'after');
-    }
-  }
+  toString() {}
 
   /** Get how long since elapsed, returns 0 if not set (returns negative if currently active)
    * @return {Number} */
@@ -1126,18 +759,6 @@ let glOverlay = 1;
 ///////////////////////////////////////////////////////////////////////////////
 // Tile sheet settings
 
-/** Default size of tiles in pixels
- *  @type {Vector2}
- *  @default Vector2(16,16)
- *  @memberof Settings */
-let tileSizeDefault = vec2(16);
-
-/** Prevent tile bleeding from neighbors in pixels
- *  @type {Number}
- *  @default
- *  @memberof Settings */
-let tileFixBleedScale = 0.3;
-
 ///////////////////////////////////////////////////////////////////////////////
 // Object settings
 
@@ -1189,58 +810,14 @@ let objectMaxSpeed = 1;
  *  @memberof Settings */
 let gravity = 0;
 
-/** Scales emit rate of particles, useful for low graphics mode (0 disables particle emitters)
- *  @type {Number}
- *  @default
- *  @memberof Settings */
-let particleEmitRateScale = 1;
-
 ///////////////////////////////////////////////////////////////////////////////
 // Input settings
-
-/** Should gamepads be allowed
- *  @type {Boolean}
- *  @default
- *  @memberof Settings */
-let gamepadsEnable = 1;
-
-/** If true, the dpad input is also routed to the left analog stick (for better accessability)
- *  @type {Boolean}
- *  @default
- *  @memberof Settings */
-let gamepadDirectionEmulateStick = 1;
 
 /** If true the WASD keys are also routed to the direction keys (for better accessability)
  *  @type {Boolean}
  *  @default
  *  @memberof Settings */
 let inputWASDEmulateDirection = 1;
-
-/** True if touch gamepad should appear on mobile devices
- *  <br> - Supports left analog stick, 4 face buttons and start button (button 9)
- *  <br> - Must be set by end of gameInit to be activated
- *  @type {Boolean}
- *  @default 0
- *  @memberof Settings */
-let touchGamepadEnable = 0;
-
-/** True if touch gamepad should be analog stick or false to use if 8 way dpad
- *  @type {Boolean}
- *  @default
- *  @memberof Settings */
-let touchGamepadAnalog = 1;
-
-/** Size of virutal gamepad for touch devices in pixels
- *  @type {Number}
- *  @default
- *  @memberof Settings */
-let touchGamepadSize = 99;
-
-/** Transparency of touch gamepad overlay
- *  @type {Number}
- *  @default
- *  @memberof Settings */
-let touchGamepadAlpha = 0.3;
 
 /** Allow vibration hardware if it exists
  *  @type {Boolean}
@@ -1275,42 +852,6 @@ let soundDefaultRange = 40;
  *  @memberof Settings */
 let soundDefaultTaper = 0.7;
 
-///////////////////////////////////////////////////////////////////////////////
-// Medals settings
-
-/** How long to show medals for in seconds
- *  @type {Number}
- *  @default
- *  @memberof Settings */
-let medalDisplayTime = 5;
-
-/** How quickly to slide on/off medals in seconds
- *  @type {Number}
- *  @default
- *  @memberof Settings */
-let medalDisplaySlideTime = 0.5;
-
-/** Size of medal display
- *  @type {Vector2}
- *  @default Vector2(640,80)
- *  @memberof Settings */
-let medalDisplaySize = vec2(640, 80);
-
-/** Size of icon in medal display
- *  @type {Number}
- *  @default
- *  @memberof Settings */
-let medalDisplayIconSize = 50;
-
-/** Set to stop medals from being unlockable (like if cheats are enabled)
- *  @type {Boolean}
- *  @default 0
- *  @memberof Settings */
-let medalsPreventUnlock;
-/*
-    LittleJS Object System
-*/
-
 ('use strict');
 
 /**
@@ -1343,22 +884,13 @@ class EngineObject {
    *  @param {Vector2} [position=Vector2()]        - World space position of the object
    *  @param {Vector2} [size=Vector2(1,1)]         - World space size of the object
    *  @param {Number}  [tileIndex=-1]              - Tile to use to render object (-1 is untextured)
-   *  @param {Vector2} [tileSize=tileSizeDefault]  - Size of tile in source pixels
+   *  @param {Vector2} [tileSize=1]  - Size of tile in source pixels
    *  @param {Number}  [angle=0]                   - Angle the object is rotated by
    *  @param {Color}   [color=Color()]             - Color to apply to tile when rendered
    *  @param {Number}  [renderOrder=0]             - Objects sorted by renderOrder before being rendered
    */
-  constructor(
-    pos = vec2(),
-    size = vec2(1),
-    tileIndex = -1,
-    tileSize = tileSizeDefault,
-    angle = 0,
-    color,
-    renderOrder = 0
-  ) {
+  constructor(pos = vec2(), size = vec2(1), tileIndex = -1, tileSize = 1, angle = 0, color, renderOrder = 0) {
     // set passed in params
-    ASSERT(isVector2(pos) && isVector2(size)); // ensure pos and size are vec2s
 
     /** @property {Vector2} - World space position of the object */
     this.pos = pos.copy();
@@ -1428,8 +960,6 @@ class EngineObject {
     this.angle += this.angleVelocity *= this.angleDamping;
 
     // physics sanity checks
-    ASSERT(this.angleDamping >= 0 && this.angleDamping <= 1);
-    ASSERT(this.damping >= 0 && this.damping <= 1);
 
     if (!enablePhysicsSolver || !this.mass)
       // do not update collision for fixed objects
@@ -1531,53 +1061,11 @@ class EngineObject {
         debugOverlay && debugPhysics && debugAABB(this.pos, this.size, o.pos, o.size, '#f0f');
       }
     }
-    if (this.collideTiles) {
-      // check collision against tiles
-      if (tileCollisionTest(this.pos, this.size, this)) {
-        // if already was stuck in collision, don't do anything
-        // this should not happen unless something starts in collision
-        if (!tileCollisionTest(oldPos, this.size, this)) {
-          // test which side we bounced off (or both if a corner)
-          const isBlockedY = tileCollisionTest(new Vector2(oldPos.x, this.pos.y), this.size, this);
-          const isBlockedX = tileCollisionTest(new Vector2(this.pos.x, oldPos.y), this.size, this);
-          if (isBlockedY | !isBlockedX) {
-            // set if landed on ground
-            this.groundObject = wasMovingDown;
-
-            // bounce velocity
-            this.velocity.y *= -this.elasticity;
-
-            // adjust next velocity to settle on ground
-            const o = ((oldPos.y - this.size.y / 2) | 0) - (oldPos.y - this.size.y / 2);
-            if (o < 0 && o > this.damping * this.velocity.y + gravity * this.gravityScale)
-              this.velocity.y = this.damping ? (o - gravity * this.gravityScale) / this.damping : 0;
-
-            // move to previous position
-            this.pos.y = oldPos.y;
-          }
-          if (isBlockedX) {
-            // move to previous position and bounce
-            this.pos.x = oldPos.x;
-            this.velocity.x *= -this.elasticity;
-          }
-        }
-      }
-    }
   }
 
   /** Render the object, draws a tile by default, automatically called each frame, sorted by renderOrder */
   render() {
     // default object render
-    drawTile(
-      this.pos,
-      this.drawSize || this.size,
-      this.tileIndex,
-      this.tileSize,
-      this.color,
-      this.angle,
-      this.mirror,
-      this.additiveColor
-    );
   }
 
   /** Destroy this object, destroy it's children, detach it's parent, and mark it for removal */
@@ -1588,22 +1076,6 @@ class EngineObject {
     this.destroyed = 1;
     this.parent && this.parent.removeChild(this);
     for (const child of this.children) child.destroy((child.parent = 0));
-  }
-
-  /** Called to check if a tile collision should be resolved
-   *  @param {Number}  tileData - the value of the tile at the position
-   *  @param {Vector2} pos      - tile where the collision occured
-   *  @return {Boolean}         - true if the collision should be resolved */
-  collideWithTile(tileData, pos) {
-    return tileData > 0;
-  }
-
-  /** Called to check if a tile raycast hit
-   *  @param {Number}  tileData - the value of the tile at the position
-   *  @param {Vector2} pos      - tile where the raycast is
-   *  @return {Boolean}         - true if the raycast should hit */
-  collideWithTileRaycast(tileData, pos) {
-    return tileData > 0;
   }
 
   /** Called to check if a object collision should be resolved
@@ -1643,7 +1115,6 @@ class EngineObject {
    *  @param {Vector2}      [localPos=Vector2()]
    *  @param {Number}       [localAngle=0] */
   addChild(child, localPos = vec2(), localAngle = 0) {
-    ASSERT(!child.parent && !this.children.includes(child));
     this.children.push(child);
     child.parent = this;
     child.localPos = localPos.copy();
@@ -1653,36 +1124,13 @@ class EngineObject {
   /** Removes a child from this one
    *  @param {EngineObject} child */
   removeChild(child) {
-    ASSERT(child.parent == this && this.children.includes(child));
     this.children.splice(this.children.indexOf(child), 1);
     child.parent = 0;
   }
 
-  /** Set how this object collides
-   *  @param {Boolean} [collideSolidObjects=1] - Does it collide with solid objects
-   *  @param {Boolean} [isSolid=1]             - Does it collide with and block other objects (expensive in large numbers)
-   *  @param {Boolean} [collideTiles=1]        - Does it collide with the tile collision */
-  setCollision(collideSolidObjects = 1, isSolid = 1, collideTiles = 1) {
-    ASSERT(collideSolidObjects || !isSolid); // solid objects must be set to collide
-
-    this.collideSolidObjects = collideSolidObjects;
-    this.isSolid = isSolid;
-    this.collideTiles = collideTiles;
-  }
-
   /** Returns string containg info about this object for debugging
    *  @return {String} */
-  toString() {
-    if (debug) {
-      let text = 'type = ' + this.constructor.name;
-      if (this.pos.x || this.pos.y) text += '\npos = ' + this.pos;
-      if (this.velocity.x || this.velocity.y) text += '\nvelocity = ' + this.velocity;
-      if (this.size.x || this.size.y) text += '\nsize = ' + this.size;
-      if (this.angle) text += '\nangle = ' + this.angle.toFixed(3);
-      if (this.color) text += '\ncolor = ' + this.color;
-      return text;
-    }
-  }
+  toString() {}
 }
 /**
  * LittleJS Drawing System
@@ -1733,21 +1181,12 @@ let overlayContext;
  *  @memberof Draw */
 let mainCanvasSize = vec2();
 
-/** Tile sheet for batch rendering system
- *  @type {CanvasImageSource}
- *  @memberof Draw */
-const tileImage = new Image();
-
-// Engine internal variables not exposed to documentation
-let tileImageSize, tileImageFixBleed, drawCount;
-
 /** Convert from screen to world space coordinates
  *  - if calling outside of render, you may need to manually set mainCanvasSize
  *  @param {Vector2} screenPos
  *  @return {Vector2}
  *  @memberof Draw */
 const screenToWorld = (screenPos) => {
-  ASSERT(mainCanvasSize.x && mainCanvasSize.y, 'mainCanvasSize is invalid');
   return screenPos
     .add(vec2(0.5))
     .subtract(mainCanvasSize.scale(0.5))
@@ -1761,83 +1200,12 @@ const screenToWorld = (screenPos) => {
  *  @return {Vector2}
  *  @memberof Draw */
 const worldToScreen = (worldPos) => {
-  ASSERT(mainCanvasSize.x && mainCanvasSize.y, 'mainCanvasSize is invalid');
   return worldPos
     .subtract(cameraPos)
     .multiply(vec2(cameraScale, -cameraScale))
     .add(mainCanvasSize.scale(0.5))
     .subtract(vec2(0.5));
 };
-
-/** Draw textured tile centered in world space, with color applied if using WebGL
- *  @param {Vector2} pos                            - Center of the tile in world space
- *  @param {Vector2} [size=Vector2(1,1)]            - Size of the tile in world space
- *  @param {Number}  [tileIndex=-1]                 - Tile index to use, negative is untextured
- *  @param {Vector2} [tileSize=tileSizeDefault]     - Tile size in source pixels
- *  @param {Color}   [color=Color()]                - Color to modulate with
- *  @param {Number}  [angle=0]                      - Angle to rotate by
- *  @param {Boolean} [mirror=0]                     - If true image is flipped along the Y axis
- *  @param {Color}   [additiveColor=Color(0,0,0,0)] - Additive color to be applied
- *  @param {Boolean} [useWebGL=glEnable]            - Use accelerated WebGL rendering
- *  @memberof Draw */
-function drawTile(
-  pos,
-  size = vec2(1),
-  tileIndex = -1,
-  tileSize = tileSizeDefault,
-  color = new Color(),
-  angle = 0,
-  mirror,
-  additiveColor = new Color(0, 0, 0, 0),
-  useWebGL = glEnable
-) {
-  showWatermark && ++drawCount;
-  if (glEnable && useWebGL) {
-    if (tileIndex < 0 || !tileImage.width) {
-      // if negative tile index or image not found, force untextured
-      glDraw(pos.x, pos.y, size.x, size.y, angle, 0, 0, 0, 0, 0, color.rgbaInt());
-    } else {
-      // calculate uvs and render
-      const cols = (tileImageSize.x / tileSize.x) | 0;
-      const uvSizeX = tileSize.x / tileImageSize.x;
-      const uvSizeY = tileSize.y / tileImageSize.y;
-      const uvX = (tileIndex % cols) * uvSizeX,
-        uvY = ((tileIndex / cols) | 0) * uvSizeY;
-
-      glDraw(
-        pos.x,
-        pos.y,
-        mirror ? -size.x : size.x,
-        size.y,
-        angle,
-        uvX + tileImageFixBleed.x,
-        uvY + tileImageFixBleed.y,
-        uvX - tileImageFixBleed.x + uvSizeX,
-        uvY - tileImageFixBleed.y + uvSizeY,
-        color.rgbaInt(),
-        additiveColor.rgbaInt()
-      );
-    }
-  } else {
-    // normal canvas 2D rendering method (slower)
-    drawCanvas2D(pos, size, angle, mirror, (context) => {
-      if (tileIndex < 0) {
-        // if negative tile index, force untextured
-        context.fillStyle = color;
-        context.fillRect(-0.5, -0.5, 1, 1);
-      } else {
-        // calculate uvs and render
-        const cols = (tileImageSize.x / tileSize.x) | 0;
-        const sX = (tileIndex % cols) * tileSize.x + tileFixBleedScale;
-        const sY = ((tileIndex / cols) | 0) * tileSize.y + tileFixBleedScale;
-        const sWidth = tileSize.x - 2 * tileFixBleedScale;
-        const sHeight = tileSize.y - 2 * tileFixBleedScale;
-        context.globalAlpha = color.a; // only alpha is supported
-        context.drawImage(tileImage, sX, sY, sWidth, sHeight, -0.5, -0.5, 1, 1);
-      }
-    });
-  }
-}
 
 /** Draw colored rect centered on pos
  *  @param {Vector2} pos
@@ -1846,34 +1214,7 @@ function drawTile(
  *  @param {Number}  [angle=0]
  *  @param {Boolean} [useWebGL=glEnable]
  *  @memberof Draw */
-function drawRect(pos, size, color, angle, useWebGL) {
-  drawTile(pos, size, -1, tileSizeDefault, color, angle, 0, 0, useWebGL);
-}
-
-/** Draw textured tile centered on pos in screen space
- *  @param {Vector2} pos                        - Center of the tile
- *  @param {Vector2} [size=Vector2(1,1)]    - Size of the tile
- *  @param {Number}  [tileIndex=-1]             - Tile index to use, negative is untextured
- *  @param {Vector2} [tileSize=tileSizeDefault] - Tile size in source pixels
- *  @param {Color}   [color=Color()]
- *  @param {Number}  [angle=0]
- *  @param {Boolean} [mirror=0]
- *  @param {Color}   [additiveColor=Color(0,0,0,0)]
- *  @param {Boolean} [useWebGL=glEnable]
- *  @memberof Draw */
-function drawTileScreenSpace(pos, size = vec2(1), tileIndex, tileSize, color, angle, mirror, additiveColor, useWebGL) {
-  drawTile(
-    screenToWorld(pos),
-    size.scale(1 / cameraScale),
-    tileIndex,
-    tileSize,
-    color,
-    angle,
-    mirror,
-    additiveColor,
-    useWebGL
-  );
-}
+function drawRect(pos, size, color, angle, useWebGL) {}
 
 /** Draw colored rectangle in screen space
  *  @param {Vector2} pos
@@ -1882,9 +1223,7 @@ function drawTileScreenSpace(pos, size = vec2(1), tileIndex, tileSize, color, an
  *  @param {Number}  [angle=0]
  *  @param {Boolean} [useWebGL=glEnable]
  *  @memberof Draw */
-function drawRectScreenSpace(pos, size, color, angle, useWebGL) {
-  drawTileScreenSpace(pos, size, -1, tileSizeDefault, color, angle, 0, 0, useWebGL);
-}
+function drawRectScreenSpace(pos, size, color, angle, useWebGL) {}
 
 /** Draw colored line between two points
  *  @param {Vector2} posA
@@ -1928,163 +1267,6 @@ function setBlendMode(additive, useWebGL = glEnable) {
   else mainContext.globalCompositeOperation = additive ? 'lighter' : 'source-over';
 }
 
-/** Draw text on overlay canvas in world space
- *  Automatically splits new lines into rows
- *  @param {String}  text
- *  @param {Vector2} pos
- *  @param {Number}  [size=1]
- *  @param {Color}   [color=Color()]
- *  @param {Number}  [lineWidth=0]
- *  @param {Color}   [lineColor=Color(0,0,0)]
- *  @param {String}  [textAlign='center']
- *  @param {String}  [font=fontDefault]
- *  @param {CanvasRenderingContext2D} [context=overlayContext]
- *  @memberof Draw */
-function drawText(text, pos, size = 1, color, lineWidth = 0, lineColor, textAlign, font, context) {
-  drawTextScreen(
-    text,
-    worldToScreen(pos),
-    size * cameraScale,
-    color,
-    lineWidth * cameraScale,
-    lineColor,
-    textAlign,
-    font,
-    context
-  );
-}
-
-/** Draw text on overlay canvas in screen space
- *  Automatically splits new lines into rows
- *  @param {String}  text
- *  @param {Vector2} pos
- *  @param {Number}  [size=1]
- *  @param {Color}   [color=Color()]
- *  @param {Number}  [lineWidth=0]
- *  @param {Color}   [lineColor=Color(0,0,0)]
- *  @param {String}  [textAlign='center']
- *  @param {String}  [font=fontDefault]
- *  @param {CanvasRenderingContext2D} [context=overlayContext]
- *  @memberof Draw */
-function drawTextScreen(
-  text,
-  pos,
-  size = 1,
-  color = new Color(),
-  lineWidth = 0,
-  lineColor = new Color(0, 0, 0),
-  textAlign = 'center',
-  font = fontDefault,
-  context = overlayContext
-) {
-  context.fillStyle = color;
-  context.lineWidth = lineWidth;
-  context.strokeStyle = lineColor;
-  context.textAlign = textAlign;
-  context.font = size + 'px ' + font;
-  context.textBaseline = 'middle';
-  context.lineJoin = 'round';
-
-  pos = pos.copy();
-  (text + '').split('\n').forEach((line) => {
-    lineWidth && context.strokeText(line, pos.x, pos.y);
-    context.fillText(line, pos.x, pos.y);
-    pos.y += size;
-  });
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-let engineFontImage;
-
-/**
- * Font Image Object - Draw text on a 2D canvas by using characters in an image
- * <br> - 96 characters (from space to tilde) are stored in an image
- * <br> - Uses a default 8x8 font if none is supplied
- * <br> - You can also use fonts from the main tile sheet
- * @example
- * // use built in font
- * const font = new ImageFont;
- *
- * // draw text
- * font.drawTextScreen("LittleJS\nHello World!", vec2(200, 50));
- */
-class FontImage {
-  /** Create an image font
-   *  @param {HTMLImageElement} [image] - Image for the font, if undefined default font is used
-   *  @param {Vector2} [tileSize=vec2(8)] - Size of the font source tiles
-   *  @param {Vector2} [paddingSize=vec2(0,1)] - How much extra space to add between characters
-   *  @param {Number}  [startTileIndex=0] - Tile index in image where font starts
-   *  @param {CanvasRenderingContext2D} [context=overlayContext] - context to draw to
-   */
-  constructor(image, tileSize = vec2(8), paddingSize = vec2(0, 1), startTileIndex = 0, context = overlayContext) {
-    // load default font image
-    if (!engineFontImage)
-      (engineFontImage = new Image()).src =
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAAYAQAAAAA9+x6JAAAAAnRSTlMAAHaTzTgAAAGiSURBVHjaZZABhxxBEIUf6ECLBdFY+Q0PMNgf0yCgsSAGZcT9sgIPtBWwIA5wgAPEoHUyJeeSlW+gjK+fegWwtROWpVQEyWh2npdpBmTUFVhb29RINgLIukoXr5LIAvYQ5ve+1FqWEMqNKTX3FAJHyQDRZvmKWubAACcv5z5Gtg2oyCWE+Yk/8JZQX1jTTCpKAFGIgza+dJCNBF2UskRlsgwitHbSV0QLgt9sTPtsRlvJjEr8C/FARWA2bJ/TtJ7lko34dNDn6usJUMzuErP89UUBJbWeozrwLLncXczd508deAjLWipLO4Q5XGPcJvPu92cNDaN0P5G1FL0nSOzddZOrJ6rNhbXGmeDvO3TF7DeJWl4bvaYQTNHCTeuqKZmbjHaSOFes+IX/+IhHrnAkXOAsfn24EM68XieIECoccD4KZLk/odiwzeo2rovYdhvb2HYFgyznJyDpYJdYOmfXgVdJTaUi4xA2uWYNYec9BLeqdl9EsoTw582mSFDX2DxVLbNt9U3YYoeatBad1c2Tj8t2akrjaIGJNywKB/7h75/gN3vCMSaadIUTAAAAAElFTkSuQmCC';
-
-    this.image = image || engineFontImage;
-    this.tileSize = tileSize;
-    this.paddingSize = paddingSize;
-    this.startTileIndex = startTileIndex;
-    this.context = context;
-  }
-
-  /** Draw text in screen space using the image font
-   *  @param {String}  text
-   *  @param {Vector2} pos
-   *  @param {Number}  [scale=4]
-   *  @param {Boolean} [center]
-   */
-  drawTextScreen(text, pos, scale = 4, center) {
-    const context = this.context;
-    context.save();
-    context.imageSmoothingEnabled = !cavasPixelated;
-
-    const size = this.tileSize;
-    const drawSize = size.add(this.paddingSize).scale(scale);
-    const cols = (this.image.width / this.tileSize.x) | 0;
-    (text + '').split('\n').forEach((line, i) => {
-      const centerOffset = center ? ((line.length * size.x * scale) / 2) | 0 : 0;
-      for (let j = line.length; j--; ) {
-        // draw each character
-        let charCode = line[j].charCodeAt();
-        if (charCode < 32 || charCode > 127) charCode = 127; // unknown character
-
-        // get the character source location and draw it
-        const tile = this.startTileIndex + charCode - 32;
-        const x = tile % cols;
-        const y = (tile / cols) | 0;
-        const drawPos = pos.add(vec2(j, i).multiply(drawSize));
-        context.drawImage(
-          this.image,
-          x * size.x,
-          y * size.y,
-          size.x,
-          size.y,
-          drawPos.x - centerOffset,
-          drawPos.y,
-          size.x * scale,
-          size.y * scale
-        );
-      }
-    });
-
-    context.restore();
-  }
-
-  /** Draw text in world space using the image font
-   *  @param {String}  text
-   *  @param {Vector2} pos
-   *  @param {Number}  [scale=.25]
-   *  @param {Boolean} [center]
-   */
-  drawText(text, pos, scale = 1, center) {
-    this.drawTextScreen(text, worldToScreen(pos).floor(), (scale * cameraScale) | 0, center);
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Fullscreen mode
 
 /** Returns true if fullscreen mode is active
@@ -2172,43 +1354,10 @@ let mousePosScreen = vec2();
  *  @memberof Input */
 let mouseWheel = 0;
 
-/** Returns true if user is using gamepad (has more recently pressed a gamepad button)
- *  @type {Boolean}
- *  @memberof Input */
-let isUsingGamepad = 0;
-
 /** Prevents input continuing to the default browser handling (false by default)
  *  @type {Boolean}
  *  @memberof Input */
 let preventDefaultInput = 0;
-
-/** Returns true if gamepad button is down
- *  @param {Number} button
- *  @param {Number} [gamepad=0]
- *  @return {Boolean}
- *  @memberof Input */
-const gamepadIsDown = (button, gamepad = 0) => keyIsDown(button, gamepad + 1);
-
-/** Returns true if gamepad button was pressed
- *  @param {Number} button
- *  @param {Number} [gamepad=0]
- *  @return {Boolean}
- *  @memberof Input */
-const gamepadWasPressed = (button, gamepad = 0) => keyWasPressed(button, gamepad + 1);
-
-/** Returns true if gamepad button was released
- *  @param {Number} button
- *  @param {Number} [gamepad=0]
- *  @return {Boolean}
- *  @memberof Input */
-const gamepadWasReleased = (button, gamepad = 0) => keyWasReleased(button, gamepad + 1);
-
-/** Returns gamepad stick value
- *  @param {Number} stick
- *  @param {Number} [gamepad=0]
- *  @return {Vector2}
- *  @memberof Input */
-const gamepadStick = (stick, gamepad = 0) => (stickData[gamepad] ? stickData[gamepad][stick] || vec2() : vec2());
 
 ///////////////////////////////////////////////////////////////////////////////
 // Input update called by engine
@@ -2223,9 +1372,6 @@ function inputUpdate() {
 
   // update mouse world space position
   mousePos = screenToWorld(mousePosScreen);
-
-  // update gamepads if enabled
-  gamepadsUpdate();
 }
 
 function inputUpdatePost() {
@@ -2238,12 +1384,10 @@ function inputUpdatePost() {
 // Keyboard event handlers
 
 onkeydown = (e) => {
-  if (debug && e.target != document.body) return;
-  e.repeat || (inputData[(isUsingGamepad = 0)][remapKey(e.which)] = 3);
+  e.repeat || (inputData[0][remapKey(e.which)] = 3);
   preventDefaultInput && e.preventDefault();
 };
 onkeyup = (e) => {
-  if (debug && e.target != document.body) return;
   inputData[0][remapKey(e.which)] = 4;
 };
 const remapKey = (c) =>
@@ -2253,7 +1397,7 @@ const remapKey = (c) =>
 // Mouse event handlers
 
 onmousedown = (e) => {
-  inputData[(isUsingGamepad = 0)][e.button] = 3;
+  inputData[0][e.button] = 3;
   onmousemove(e);
   e.button && e.preventDefault();
 };
@@ -2271,64 +1415,6 @@ const mouseToScreen = (mousePos) => {
     vec2(percent(mousePos.x, rect.left, rect.right), percent(mousePos.y, rect.top, rect.bottom))
   );
 };
-
-///////////////////////////////////////////////////////////////////////////////
-// Gamepad input
-
-const stickData = [];
-function gamepadsUpdate() {
-  if (touchGamepadEnable && touchGamepadTimer.isSet()) {
-    // read virtual analog stick
-    const sticks = stickData[0] || (stickData[0] = []);
-    sticks[0] = vec2(touchGamepadStick.x, -touchGamepadStick.y); // flip vertical
-
-    // read virtual gamepad buttons
-    const data = inputData[1] || (inputData[1] = []);
-    for (let i = 10; i--; ) {
-      const j = i == 3 ? 2 : i == 2 ? 3 : i; // fix button locations
-      data[j] = touchGamepadButtons[i] ? 1 + 2 * !gamepadIsDown(j, 0) : 4 * gamepadIsDown(j, 0);
-    }
-  }
-
-  if (!gamepadsEnable || !navigator || !navigator.getGamepads || (!document.hasFocus() && !debug)) return;
-
-  // poll gamepads
-  const gamepads = navigator.getGamepads();
-  for (let i = gamepads.length; i--; ) {
-    // get or create gamepad data
-    const gamepad = gamepads[i];
-    const data = inputData[i + 1] || (inputData[i + 1] = []);
-    const sticks = stickData[i] || (stickData[i] = []);
-
-    if (gamepad) {
-      // read clamp dead zone of analog sticks
-      const deadZone = 0.3,
-        deadZoneMax = 0.8;
-      const applyDeadZone = (v) =>
-        v > deadZone ? percent(v, deadZone, deadZoneMax) : v < -deadZone ? -percent(-v, deadZone, deadZoneMax) : 0;
-
-      // read analog sticks
-      for (let j = 0; j < gamepad.axes.length - 1; j += 2)
-        sticks[j >> 1] = vec2(applyDeadZone(gamepad.axes[j]), applyDeadZone(-gamepad.axes[j + 1])).clampLength();
-
-      // read buttons
-      for (let j = gamepad.buttons.length; j--; ) {
-        const button = gamepad.buttons[j];
-        data[j] = button.pressed ? 1 + 2 * !gamepadIsDown(j, i) : 4 * gamepadIsDown(j, i);
-        isUsingGamepad |= !i && button.pressed;
-        touchGamepadEnable && touchGamepadTimer.unset(); // disable touch gamepad if using real gamepad
-      }
-
-      if (gamepadDirectionEmulateStick) {
-        // copy dpad to left analog stick when pressed
-        const dpad = vec2(gamepadIsDown(15, i) - gamepadIsDown(14, i), gamepadIsDown(12, i) - gamepadIsDown(13, i));
-        if (dpad.lengthSquared()) sticks[0] = dpad.clampLength();
-      }
-    }
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
 
 /** Pulse the vibration hardware if it exists
  *  @param {Number} [pattern=100] - a single value in miliseconds or vibration interval array
@@ -2382,134 +1468,10 @@ if (isTouchDevice) {
           return true;
         };
 
-    // try to create touch game pad
-    touchGamepadEnable && touchGamepadCreate();
-
     return ontouchstart(e);
   };
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// touch gamepad, virtual on screen gamepad emulator for touch devices
-
-// touch input internal variables
-let touchGamepadTimer = new Timer(),
-  touchGamepadButtons,
-  touchGamepadStick;
-
-// create the touch gamepad, called automatically by the engine
-function touchGamepadCreate() {
-  // touch input internal variables
-  touchGamepadButtons = [];
-  touchGamepadStick = vec2();
-
-  let touchHandler = ontouchstart;
-  ontouchstart =
-    ontouchmove =
-    ontouchend =
-      (e) => {
-        // clear touch gamepad input
-        touchGamepadStick = vec2();
-        touchGamepadButtons = [];
-
-        const touching = e.touches.length;
-        if (touching) {
-          touchGamepadTimer.set();
-          if (paused) {
-            // touch anywhere to press start when paused
-            touchGamepadButtons[9] = 1;
-            return;
-          }
-        }
-
-        // get center of left and right sides
-        const stickCenter = vec2(touchGamepadSize, mainCanvasSize.y - touchGamepadSize);
-        const buttonCenter = mainCanvasSize.subtract(vec2(touchGamepadSize, touchGamepadSize));
-        const startCenter = mainCanvasSize.scale(0.5);
-
-        // check each touch point
-        for (const touch of e.touches) {
-          const touchPos = mouseToScreen(vec2(touch.clientX, touch.clientY));
-          if (touchPos.distance(stickCenter) < touchGamepadSize) {
-            // virtual analog stick
-            if (touchGamepadAnalog)
-              touchGamepadStick = touchPos
-                .subtract(stickCenter)
-                .scale(2 / touchGamepadSize)
-                .clampLength();
-            else {
-              // 8 way dpad
-              const angle = touchPos.subtract(stickCenter).angle();
-              touchGamepadStick.setAngle(((((angle * 4) / PI + 8.5) | 0) * PI) / 4);
-            }
-          } else if (touchPos.distance(buttonCenter) < touchGamepadSize) {
-            // virtual face buttons
-            const button = touchPos.subtract(buttonCenter).direction();
-            touchGamepadButtons[button] = 1;
-          } else if (touchPos.distance(startCenter) < touchGamepadSize) {
-            // virtual start button in center
-            touchGamepadButtons[9] = 1;
-          }
-        }
-
-        // call default touch handler and set to using gamepad
-        touchHandler(e);
-        isUsingGamepad = 1;
-
-        // must return true so the document will get focus
-        return true;
-      };
-}
-
-// render the touch gamepad, called automatically by the engine
-function touchGamepadRender() {
-  if (!touchGamepadEnable || !touchGamepadTimer.isSet()) return;
-
-  // fade off when not touching or paused
-  const alpha = percent(touchGamepadTimer, 4, 3);
-  if (!alpha || paused) return;
-
-  // setup the canvas
-  overlayContext.save();
-  overlayContext.globalAlpha = alpha * touchGamepadAlpha;
-  overlayContext.strokeStyle = '#fff';
-  overlayContext.lineWidth = 3;
-
-  // draw left analog stick
-  overlayContext.fillStyle = touchGamepadStick.lengthSquared() > 0 ? '#fff' : '#000';
-  overlayContext.beginPath();
-
-  const leftCenter = vec2(touchGamepadSize, mainCanvasSize.y - touchGamepadSize);
-  if (touchGamepadAnalog) {
-    // draw circle shaped gamepad
-    overlayContext.arc(leftCenter.x, leftCenter.y, touchGamepadSize / 2, 0, 9);
-    overlayContext.fill();
-    overlayContext.stroke();
-  } // draw cross shaped gamepad
-  else {
-    for (let i = 10; i--; ) {
-      const angle = (i * PI) / 4;
-      overlayContext.arc(leftCenter.x, leftCenter.y, touchGamepadSize * 0.6, angle + PI / 8, angle + PI / 8);
-      i % 2 && overlayContext.arc(leftCenter.x, leftCenter.y, touchGamepadSize * 0.33, angle, angle);
-      i == 1 && overlayContext.fill();
-    }
-    overlayContext.stroke();
-  }
-
-  // draw right face buttons
-  const rightCenter = vec2(mainCanvasSize.x - touchGamepadSize, mainCanvasSize.y - touchGamepadSize);
-  for (let i = 4; i--; ) {
-    const pos = rightCenter.add(new Vector2().setAngle((i * PI) / 2, touchGamepadSize / 2));
-    overlayContext.fillStyle = touchGamepadButtons[i] ? '#fff' : '#000';
-    overlayContext.beginPath();
-    overlayContext.arc(pos.x, pos.y, touchGamepadSize / 4, 0, 9);
-    overlayContext.fill();
-    overlayContext.stroke();
-  }
-
-  // set canvas back to normal
-  overlayContext.restore();
-}
 /**
  * LittleJS Audio System
  * <br> - <a href=https://killedbyapixel.github.io/ZzFX/>ZzFX Sound Effects</a>
@@ -2997,943 +1959,7 @@ function zzfxM(instruments, patterns, sequence, BPM = 125) {
 
   return [leftChannelBuffer, rightChannelBuffer];
 }
-/**
- * LittleJS Tile Layer System
- * <br> - Caches arrays of tiles to off screen canvas for fast rendering
- * <br> - Unlimted numbers of layers, allocates canvases as needed
- * <br> - Interfaces with EngineObject for collision
- * <br> - Collision layer is separate from visible layers
- * <br> - It is recommended to have a visible layer that matches the collision
- * <br> - Tile layers can be drawn to using their context with canvas2d
- * <br> - Drawn directly to the main canvas without using WebGL
- * @namespace TileCollision
- */
 
-('use strict');
-
-/** The tile collision layer array, use setTileCollisionData and getTileCollisionData to access
- *  @type {Array}
- *  @memberof TileCollision */
-let tileCollision = [];
-
-/** Size of the tile collision layer
- *  @type {Vector2}
- *  @memberof TileCollision */
-let tileCollisionSize = vec2();
-
-/** Clear and initialize tile collision
- *  @param {Vector2} size
- *  @memberof TileCollision */
-function initTileCollision(size) {
-  tileCollisionSize = size;
-  tileCollision = [];
-  for (let i = (tileCollision.length = tileCollisionSize.area()); i--; ) tileCollision[i] = 0;
-}
-
-/** Set tile collision data
- *  @param {Vector2} pos
- *  @param {Number}  [data=0]
- *  @memberof TileCollision */
-const setTileCollisionData = (pos, data = 0) =>
-  pos.arrayCheck(tileCollisionSize) && (tileCollision[((pos.y | 0) * tileCollisionSize.x + pos.x) | 0] = data);
-
-/** Get tile collision data
- *  @param {Vector2} pos
- *  @return {Number}
- *  @memberof TileCollision */
-const getTileCollisionData = (pos) =>
-  pos.arrayCheck(tileCollisionSize) ? tileCollision[((pos.y | 0) * tileCollisionSize.x + pos.x) | 0] : 0;
-
-/** Check if collision with another object should occur
- *  @param {Vector2}      pos
- *  @param {Vector2}      [size=Vector2(1,1)]
- *  @param {EngineObject} [object]
- *  @return {Boolean}
- *  @memberof TileCollision */
-function tileCollisionTest(pos, size = vec2(), object) {
-  const minX = max((pos.x - size.x / 2) | 0, 0);
-  const minY = max((pos.y - size.y / 2) | 0, 0);
-  const maxX = min(pos.x + size.x / 2, tileCollisionSize.x);
-  const maxY = min(pos.y + size.y / 2, tileCollisionSize.y);
-  for (let y = minY; y < maxY; ++y)
-    for (let x = minX; x < maxX; ++x) {
-      const tileData = tileCollision[y * tileCollisionSize.x + x];
-      if (tileData && (!object || object.collideWithTile(tileData, new Vector2(x, y)))) return 1;
-    }
-}
-
-/** Return the center of tile if any that is hit (this does not return the exact hit point)
- *  @param {Vector2}      posStart
- *  @param {Vector2}      posEnd
- *  @param {EngineObject} [object]
- *  @return {Vector2}
- *  @memberof TileCollision */
-function tileCollisionRaycast(posStart, posEnd, object) {
-  // test if a ray collides with tiles from start to end
-  // todo: a way to get the exact hit point, it must still register as inside the hit tile
-  const posDelta = (posEnd = posEnd.floor()).subtract((posStart = posStart.floor()));
-  const dx = abs(posDelta.x),
-    dy = -abs(posDelta.y);
-  const sx = sign(posDelta.x),
-    sy = sign(posDelta.y);
-
-  for (let x = posStart.x, y = posStart.y, e = dx + dy; ; ) {
-    const tileData = getTileCollisionData(vec2(x, y));
-    if (tileData && (object ? object.collideWithTileRaycast(tileData, new Vector2(x, y)) : tileData > 0)) {
-      debugRaycast && debugLine(posStart, posEnd, '#f00', 0.02, 1);
-      debugRaycast && debugPoint(new Vector2(x + 0.5, y + 0.5), '#ff0', 1);
-      return new Vector2(x + 0.5, y + 0.5);
-    }
-
-    // update Bresenham line drawing algorithm
-    if ((x == posEnd.x) & (y == posEnd.y)) break;
-    const e2 = 2 * e;
-    if (e2 >= dy) (e += dy), (x += sx);
-    if (e2 <= dx) (e += dx), (y += sy);
-  }
-  debugRaycast && debugLine(posStart, posEnd, '#00f', 0.02, 1);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Tile Layer Rendering System
-
-/**
- * Tile layer data object stores info about how to render a tile
- * @example
- * // create tile layer data with tile index 0 and random orientation and color
- * const tileIndex = 0;
- * const direction = randInt(4)
- * const mirror = randInt(2);
- * const color = randColor();
- * const data = new TileLayerData(tileIndex, direction, mirror, color);
- */
-class TileLayerData {
-  /** Create a tile layer data object, one for each tile in a TileLayer
-   *  @param {Number}  [tile]          - The tile to use, untextured if undefined
-   *  @param {Number}  [direction=0]   - Integer direction of tile, in 90 degree increments
-   *  @param {Boolean} [mirror=0]      - If the tile should be mirrored along the x axis
-   *  @param {Color}   [color=Color()] - Color of the tile */
-  constructor(tile, direction = 0, mirror = 0, color = new Color()) {
-    /** @property {Number}  - The tile to use, untextured if undefined */
-    this.tile = tile;
-    /** @property {Number}  - Integer direction of tile, in 90 degree increments */
-    this.direction = direction;
-    /** @property {Boolean} - If the tile should be mirrored along the x axis */
-    this.mirror = mirror;
-    /** @property {Color}   - Color of the tile */
-    this.color = color;
-  }
-
-  /** Set this tile to clear, it will not be rendered */
-  clear() {
-    this.tile = this.direction = this.mirror = 0;
-    color = new Color();
-  }
-}
-
-/**
- * Tile layer object - cached rendering system for tile layers
- * <br> - Each Tile layer is rendered to an off screen canvas
- * <br> - To allow dynamic modifications, layers are rendered using canvas 2d
- * <br> - Some devices like mobile phones are limited to 4k texture resolution
- * <br> - So with 16x16 tiles this limits layers to 256x256 on mobile devices
- * @extends EngineObject
- * @example
- * // create tile collision and visible tile layer
- * initTileCollision(vec2(200,100));
- * const tileLayer = new TileLayer();
- */
-class TileLayer extends EngineObject {
-  /** Create a tile layer object
-   *  @param {Vector2} [position=Vector2()]       - World space position
-   *  @param {Vector2} [size=tileCollisionSize]   - World space size
-   *  @param {Vector2} [tileSize=tileSizeDefault] - Size of tiles in source pixels
-   *  @param {Vector2} [scale=Vector2(1,1)]       - How much to scale this layer when rendered
-   *  @param {Number}  [renderOrder=0]            - Objects sorted by renderOrder before being rendered
-   */
-  constructor(pos, size = tileCollisionSize, tileSize = tileSizeDefault, scale = vec2(1), renderOrder = 0) {
-    super(pos, size, -1, tileSize, 0, undefined, renderOrder);
-
-    /** @property {HTMLCanvasElement}        - The canvas used by this tile layer */
-    this.canvas = document.createElement('canvas');
-    /** @property {CanvasRenderingContext2D} - The 2D canvas context used by this tile layer */
-    this.context = this.canvas.getContext('2d');
-    /** @property {Vector2}                  - How much to scale this layer when rendered */
-    this.scale = scale;
-    /** @property {Boolean} [isOverlay=0]    - If true this layer will render to overlay canvas and appear above all objects */
-    this.isOverlay;
-
-    // init tile data
-    this.data = [];
-    for (let j = this.size.area(); j--; ) this.data.push(new TileLayerData());
-  }
-
-  /** Set data at a given position in the array
-   *  @param {Vector2}       position   - Local position in array
-   *  @param {TileLayerData} data       - Data to set
-   *  @param {Boolean}       [redraw=0] - Force the tile to redraw if true */
-  setData(layerPos, data, redraw) {
-    if (layerPos.arrayCheck(this.size)) {
-      this.data[((layerPos.y | 0) * this.size.x + layerPos.x) | 0] = data;
-      redraw && this.drawTileData(layerPos);
-    }
-  }
-
-  /** Get data at a given position in the array
-   *  @param {Vector2} layerPos - Local position in array
-   *  @return {TileLayerData} */
-  getData(layerPos) {
-    return layerPos.arrayCheck(this.size) && this.data[((layerPos.y | 0) * this.size.x + layerPos.x) | 0];
-  }
-
-  // Tile layers are not updated
-  update() {}
-
-  // Render the tile layer, called automatically by the engine
-  render() {
-    ASSERT(mainContext != this.context); // must call redrawEnd() after drawing tiles
-
-    // flush and copy gl canvas because tile canvas does not use webgl
-    glEnable && !glOverlay && !this.isOverlay && glCopyToContext(mainContext);
-
-    // draw the entire cached level onto the canvas
-    const pos = worldToScreen(this.pos.add(vec2(0, this.size.y * this.scale.y)));
-    (this.isOverlay ? overlayContext : mainContext).drawImage(
-      this.canvas,
-      pos.x,
-      pos.y,
-      cameraScale * this.size.x * this.scale.x,
-      cameraScale * this.size.y * this.scale.y
-    );
-  }
-
-  /** Draw all the tile data to an offscreen canvas
-   *  - This may be slow in some browsers
-   */
-  redraw() {
-    this.redrawStart(1);
-    this.drawAllTileData();
-    this.redrawEnd();
-  }
-
-  /** Call to start the redraw process
-   *  @param {Boolean} [clear=0] - Should it clear the canvas before drawing */
-  redrawStart(clear = 0) {
-    // save current render settings
-    this.savedRenderSettings = [mainCanvas, mainContext, mainCanvasSize, cameraPos, cameraScale];
-
-    // hack: use normal rendering system to render the tiles
-    mainCanvas = this.canvas;
-    mainContext = this.context;
-    cameraPos = this.size.scale(0.5);
-    cameraScale = this.tileSize.x;
-
-    if (clear) {
-      // clear and set size
-      mainCanvas.width = this.size.x * this.tileSize.x;
-      mainCanvas.height = this.size.y * this.tileSize.y;
-    }
-
-    // begin a new render for the tile canvas
-    enginePreRender();
-  }
-
-  /** Call to end the redraw process */
-  redrawEnd() {
-    ASSERT(mainContext == this.context); // must call redrawStart() before drawing tiles
-    glEnable && glCopyToContext(mainContext, 1);
-    //debugSaveCanvas(this.canvas);
-
-    // set stuff back to normal
-    [mainCanvas, mainContext, mainCanvasSize, cameraPos, cameraScale] = this.savedRenderSettings;
-  }
-
-  /** Draw the tile at a given position
-   *  @param {Vector2} layerPos */
-  drawTileData(layerPos) {
-    // first clear out where the tile was
-    const pos = layerPos.floor().add(this.pos).add(vec2(0.5));
-    this.drawCanvas2D(pos, vec2(1), 0, 0, (context) => context.clearRect(-0.5, -0.5, 1, 1));
-
-    // draw the tile if not undefined
-    const d = this.getData(layerPos);
-    if (d.tile != undefined) {
-      ASSERT(mainContext == this.context); // must call redrawStart() before drawing tiles
-      drawTile(pos, vec2(1), d.tile, this.tileSize, d.color, (d.direction * PI) / 2, d.mirror);
-    }
-  }
-
-  /** Draw all the tiles in this layer */
-  drawAllTileData() {
-    for (let x = this.size.x; x--; ) for (let y = this.size.y; y--; ) this.drawTileData(vec2(x, y));
-  }
-
-  /** Draw directly to the 2D canvas in world space (bipass webgl)
-   *  @param {Vector2}  pos
-   *  @param {Vector2}  size
-   *  @param {Number}   [angle=0]
-   *  @param {Boolean}  [mirror=0]
-   *  @param {Function} drawFunction */
-  drawCanvas2D(pos, size, angle = 0, mirror, drawFunction) {
-    const context = this.context;
-    context.save();
-    pos = pos.subtract(this.pos).multiply(this.tileSize);
-    size = size.multiply(this.tileSize);
-    context.translate(pos.x, this.canvas.height - pos.y);
-    context.rotate(angle);
-    context.scale(mirror ? -size.x : size.x, size.y);
-    drawFunction(context);
-    context.restore();
-  }
-
-  /** Draw a tile directly onto the layer canvas
-   *  @param {Vector2} pos
-   *  @param {Vector2} [size=Vector2(1,1)]
-   *  @param {Number}  [tileIndex=-1]
-   *  @param {Vector2} [tileSize=tileSizeDefault]
-   *  @param {Color}   [color=Color()]
-   *  @param {Number}  [angle=0]
-   *  @param {Boolean} [mirror=0] */
-  drawTile(pos, size = vec2(1), tileIndex = -1, tileSize = tileSizeDefault, color = new Color(), angle, mirror) {
-    this.drawCanvas2D(pos, size, angle, mirror, (context) => {
-      if (tileIndex < 0) {
-        // untextured
-        context.fillStyle = color;
-        context.fillRect(-0.5, -0.5, 1, 1);
-      } else {
-        const cols = tileImage.width / tileSize.x;
-        context.globalAlpha = color.a; // only alpha, no color, is supported in this mode
-        context.drawImage(
-          tileImage,
-          (tileIndex % cols) * tileSize.x,
-          ((tileIndex / cols) | 0) * tileSize.y,
-          tileSize.x,
-          tileSize.y,
-          -0.5,
-          -0.5,
-          1,
-          1
-        );
-      }
-    });
-  }
-
-  /** Draw a rectangle directly onto the layer canvas
-   *  @param {Vector2} pos
-   *  @param {Vector2} [size=Vector2(1,1)]
-   *  @param {Color}   [color=Color()]
-   *  @param {Number}  [angle=0] */
-  drawRect(pos, size, color, angle) {
-    this.drawTile(pos, size, -1, 0, color, angle);
-  }
-}
-/*
-    LittleJS Particle System
-    - Spawns particles with randomness from parameters
-    - Updates particle physics
-    - Fast particle rendering
-*/
-
-('use strict');
-
-/**
- * Particle Emitter - Spawns particles with the given settings
- * @extends EngineObject
- * @example
- * // create a particle emitter
- * let pos = vec2(2,3);
- * let particleEmiter = new ParticleEmitter
- * (
- *     pos, 0, 1, 0, 500, PI,  // pos, angle, emitSize, emitTime, emitRate, emiteCone
- *     0, vec2(16),                            // tileIndex, tileSize
- *     new Color(1,1,1),   new Color(0,0,0),   // colorStartA, colorStartB
- *     new Color(1,1,1,0), new Color(0,0,0,0), // colorEndA, colorEndB
- *     2, .2, .2, .1, .05,  // particleTime, sizeStart, sizeEnd, particleSpeed, particleAngleSpeed
- *     .99, 1, 1, PI, .05,  // damping, angleDamping, gravityScale, particleCone, fadeRate,
- *     .5, 1                // randomness, collide, additive, randomColorLinear, renderOrder
- * );
- */
-class ParticleEmitter extends EngineObject {
-  /** Create a particle system with the given settings
-   *  @param {Vector2} position           - World space position of the emitter
-   *  @param {Number}  [angle=0]          - Angle to emit the particles
-   *  @param {Number}  [emitSize=0]       - World space size of the emitter (float for circle diameter, vec2 for rect)
-   *  @param {Number}  [emitTime=0]       - How long to stay alive (0 is forever)
-   *  @param {Number}  [emitRate=100]     - How many particles per second to spawn, does not emit if 0
-   *  @param {Number}  [emitConeAngle=PI] - Local angle to apply velocity to particles from emitter
-   *  @param {Number}  [tileIndex=-1]     - Index into tile sheet, if <0 no texture is applied
-   *  @param {Vector2} [tileSize=tileSizeDefault] - Tile size for particles
-   *  @param {Color}   [colorStartA=Color()] - Color at start of life 1, randomized between start colors
-   *  @param {Color}   [colorStartB=Color()] - Color at start of life 2, randomized between start colors
-   *  @param {Color}   [colorEndA=Color(1,1,1,0)] - Color at end of life 1, randomized between end colors
-   *  @param {Color}   [colorEndB=Color(1,1,1,0)] - Color at end of life 2, randomized between end colors
-   *  @param {Number}  [particleTime=.5]      - How long particles live
-   *  @param {Number}  [sizeStart=.1]         - How big are particles at start
-   *  @param {Number}  [sizeEnd=1]            - How big are particles at end
-   *  @param {Number}  [speed=.1]             - How fast are particles when spawned
-   *  @param {Number}  [angleSpeed=.05]       - How fast are particles rotating
-   *  @param {Number}  [damping=1]            - How much to dampen particle speed
-   *  @param {Number}  [angleDamping=1]       - How much to dampen particle angular speed
-   *  @param {Number}  [gravityScale=0]       - How much does gravity effect particles
-   *  @param {Number}  [particleConeAngle=PI] - Cone for start particle angle
-   *  @param {Number}  [fadeRate=.1]          - How quick to fade in particles at start/end in percent of life
-   *  @param {Number}  [randomness=.2]        - Apply extra randomness percent
-   *  @param {Boolean} [collideTiles=0]       - Do particles collide against tiles
-   *  @param {Boolean} [additive=0]           - Should particles use addtive blend
-   *  @param {Boolean} [randomColorLinear=1]  - Should color be randomized linearly or across each component
-   *  @param {Number}  [renderOrder=0]        - Render order for particles (additive is above other stuff by default)
-   *  @param {Boolean}  [localSpace=0]        - Should it be in local space of emitter (world space is default)
-   */
-  constructor(
-    pos,
-    angle,
-    emitSize = 0,
-    emitTime = 0,
-    emitRate = 100,
-    emitConeAngle = PI,
-    tileIndex = -1,
-    tileSize = tileSizeDefault,
-    colorStartA = new Color(),
-    colorStartB = new Color(),
-    colorEndA = new Color(1, 1, 1, 0),
-    colorEndB = new Color(1, 1, 1, 0),
-    particleTime = 0.5,
-    sizeStart = 0.1,
-    sizeEnd = 1,
-    speed = 0.1,
-    angleSpeed = 0.05,
-    damping = 1,
-    angleDamping = 1,
-    gravityScale = 0,
-    particleConeAngle = PI,
-    fadeRate = 0.1,
-    randomness = 0.2,
-    collideTiles,
-    additive,
-    randomColorLinear = 1,
-    renderOrder = additive ? 1e9 : 0,
-    localSpace
-  ) {
-    super(pos, new Vector2(), tileIndex, tileSize, angle, undefined, renderOrder);
-
-    // emitter settings
-    /** @property {Number} - World space size of the emitter (float for circle diameter, vec2 for rect) */
-    this.emitSize = emitSize;
-    /** @property {Number} - How long to stay alive (0 is forever) */
-    this.emitTime = emitTime;
-    /** @property {Number} - How many particles per second to spawn, does not emit if 0 */
-    this.emitRate = emitRate;
-    /** @property {Number} - Local angle to apply velocity to particles from emitter */
-    this.emitConeAngle = emitConeAngle;
-
-    // color settings
-    /** @property {Color} - Color at start of life 1, randomized between start colors */
-    this.colorStartA = colorStartA;
-    /** @property {Color} - Color at start of life 2, randomized between start colors */
-    this.colorStartB = colorStartB;
-    /** @property {Color} - Color at end of life 1, randomized between end colors */
-    this.colorEndA = colorEndA;
-    /** @property {Color} - Color at end of life 2, randomized between end colors */
-    this.colorEndB = colorEndB;
-    /** @property {Boolean} - Should color be randomized linearly or across each component */
-    this.randomColorLinear = randomColorLinear;
-
-    // particle settings
-    /** @property {Number} - How long particles live */
-    this.particleTime = particleTime;
-    /** @property {Number} - How big are particles at start */
-    this.sizeStart = sizeStart;
-    /** @property {Number} - How big are particles at end */
-    this.sizeEnd = sizeEnd;
-    /** @property {Number} - How fast are particles when spawned */
-    this.speed = speed;
-    /** @property {Number} - How fast are particles rotating */
-    this.angleSpeed = angleSpeed;
-    /** @property {Number} - How much to dampen particle speed */
-    this.damping = damping;
-    /** @property {Number} - How much to dampen particle angular speed */
-    this.angleDamping = angleDamping;
-    /** @property {Number} - How much does gravity effect particles */
-    this.gravityScale = gravityScale;
-    /** @property {Number} - Cone for start particle angle */
-    this.particleConeAngle = particleConeAngle;
-    /** @property {Number} - How quick to fade in particles at start/end in percent of life */
-    this.fadeRate = fadeRate;
-    /** @property {Number} - Apply extra randomness percent */
-    this.randomness = randomness;
-    /** @property {Number} - Do particles collide against tiles */
-    this.collideTiles = collideTiles;
-    /** @property {Number} - Should particles use addtive blend */
-    this.additive = additive;
-    /** @property {Boolean} - Should it be in local space of emitter */
-    this.localSpace = localSpace;
-    /** @property {Number} - If set the partile is drawn as a trail, stretched in the drection of velocity */
-    this.trailScale = 0;
-
-    // internal variables
-    this.emitTimeBuffer = 0;
-  }
-
-  /** Update the emitter to spawn particles, called automatically by engine once each frame */
-  update() {
-    // only do default update to apply parent transforms
-    this.parent && super.update();
-
-    // update emitter
-    if (!this.emitTime | (this.getAliveTime() <= this.emitTime)) {
-      // emit particles
-      if (this.emitRate * particleEmitRateScale) {
-        const rate = 1 / this.emitRate / particleEmitRateScale;
-        for (this.emitTimeBuffer += timeDelta; this.emitTimeBuffer > 0; this.emitTimeBuffer -= rate)
-          this.emitParticle();
-      }
-    } else this.destroy();
-
-    debugParticles && debugRect(this.pos, vec2(this.emitSize), '#0f0', 0, this.angle);
-  }
-
-  /** Spawn one particle
-   *  @return {Particle} */
-  emitParticle() {
-    // spawn a particle
-    let pos =
-      this.emitSize.x != undefined // check if vec2 was used for size
-        ? new Vector2(rand(-0.5, 0.5), rand(-0.5, 0.5)).multiply(this.emitSize).rotate(this.angle) // box emitter
-        : randInCircle(this.emitSize / 2); // circle emitter
-    let angle = rand(this.particleConeAngle, -this.particleConeAngle);
-    if (!this.localSpace) {
-      pos = this.pos.add(pos);
-      angle += this.angle;
-    }
-
-    const particle = new Particle(pos, this.tileIndex, this.tileSize, angle);
-
-    // randomness scales each paremeter by a percentage
-    const randomness = this.randomness;
-    const randomizeScale = (v) => v + v * rand(randomness, -randomness);
-
-    // randomize particle settings
-    const particleTime = randomizeScale(this.particleTime);
-    const sizeStart = randomizeScale(this.sizeStart);
-    const sizeEnd = randomizeScale(this.sizeEnd);
-    const speed = randomizeScale(this.speed);
-    const angleSpeed = randomizeScale(this.angleSpeed) * randSign();
-    const coneAngle = rand(this.emitConeAngle, -this.emitConeAngle);
-    const colorStart = randColor(this.colorStartA, this.colorStartB, this.randomColorLinear);
-    const colorEnd = randColor(this.colorEndA, this.colorEndB, this.randomColorLinear);
-    const velocityAngle = this.localSpace ? coneAngle : this.angle + coneAngle;
-
-    // build particle settings
-    particle.colorStart = colorStart;
-    particle.colorEndDelta = colorEnd.subtract(colorStart);
-    particle.velocity = new Vector2().setAngle(velocityAngle, speed);
-    particle.angleVelocity = angleSpeed;
-    particle.lifeTime = particleTime;
-    particle.sizeStart = sizeStart;
-    particle.sizeEndDelta = sizeEnd - sizeStart;
-    particle.fadeRate = this.fadeRate;
-    particle.damping = this.damping;
-    particle.angleDamping = this.angleDamping;
-    particle.elasticity = this.elasticity;
-    particle.friction = this.friction;
-    particle.gravityScale = this.gravityScale;
-    particle.collideTiles = this.collideTiles;
-    particle.additive = this.additive;
-    particle.renderOrder = this.renderOrder;
-    particle.trailScale = this.trailScale;
-    particle.mirror = randInt(2);
-    particle.localSpaceEmitter = this.localSpace && this;
-
-    // setup callbacks for particles
-    particle.destroyCallback = this.particleDestroyCallback;
-    this.particleCreateCallback && this.particleCreateCallback(particle);
-
-    // return the newly created particle
-    return particle;
-  }
-
-  // Particle emitters are not rendered, only the particles are
-  render() {}
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/**
- * Particle Object - Created automatically by Particle Emitters
- * @extends EngineObject
- */
-class Particle extends EngineObject {
-  /**
-   * Create a particle with the given settings
-   * @param {Vector2} position                   - World space position of the particle
-   * @param {Number}  [tileIndex=-1]             - Tile to use to render, untextured if -1
-   * @param {Vector2} [tileSize=tileSizeDefault] - Size of tile in source pixels
-   * @param {Number}  [angle=0]                  - Angle to rotate the particle
-   */
-  constructor(pos, tileIndex, tileSize, angle) {
-    super(pos, new Vector2(), tileIndex, tileSize, angle);
-  }
-
-  /** Render the particle, automatically called each frame, sorted by renderOrder */
-  render() {
-    // modulate size and color
-    const p = min((time - this.spawnTime) / this.lifeTime, 1);
-    const radius = this.sizeStart + p * this.sizeEndDelta;
-    const size = new Vector2(radius, radius);
-    const fadeRate = this.fadeRate / 2;
-    const color = new Color(
-      this.colorStart.r + p * this.colorEndDelta.r,
-      this.colorStart.g + p * this.colorEndDelta.g,
-      this.colorStart.b + p * this.colorEndDelta.b,
-      (this.colorStart.a + p * this.colorEndDelta.a) *
-        (p < fadeRate ? p / fadeRate : p > 1 - fadeRate ? (1 - p) / fadeRate : 1)
-    ); // fade alpha
-
-    // draw the particle
-    this.additive && setBlendMode(1);
-
-    let pos = this.pos,
-      angle = this.angle;
-    if (this.localSpaceEmitter) {
-      // in local space of emitter
-      pos = this.localSpaceEmitter.pos.add(pos.rotate(-this.localSpaceEmitter.angle));
-      angle += this.localSpaceEmitter.angle;
-    }
-    if (this.trailScale) {
-      // trail style particles
-      let velocity = this.velocity;
-      if (this.localSpaceEmitter) velocity = velocity.rotate(-this.localSpaceEmitter.angle);
-      const speed = velocity.length();
-      const direction = velocity.scale(1 / speed);
-      const trailLength = speed * this.trailScale;
-      size.y = max(size.x, trailLength);
-      angle = direction.angle();
-      drawTile(
-        pos.add(direction.multiply(vec2(0, -trailLength / 2))),
-        size,
-        this.tileIndex,
-        this.tileSize,
-        color,
-        angle,
-        this.mirror
-      );
-    } else drawTile(pos, size, this.tileIndex, this.tileSize, color, angle, this.mirror);
-    this.additive && setBlendMode();
-    debugParticles && debugRect(pos, size, '#f005', 0, angle);
-
-    if (p == 1) {
-      // destroy particle when it's time runs out
-      this.color = color;
-      this.size = size;
-      this.destroyCallback && this.destroyCallback(this);
-      this.destroyed = 1;
-    }
-  }
-}
-/**
- * LittleJS Medal System
- * <br> - Tracks and displays medals
- * <br> - Saves medals to local storage
- * <br> - Newgrounds integration
- * @namespace Medals
- */
-
-('use strict');
-
-/** List of all medals
- *  @type {Array}
- *  @memberof Medals */
-const medals = [];
-
-// Engine internal variables not exposed to documentation
-let medalsDisplayQueue = [],
-  medalsSaveName,
-  medalsDisplayTimeLast;
-
-///////////////////////////////////////////////////////////////////////////////
-
-/** Initialize medals with a save name used for storage
- *  <br> - Call this after creating all medals
- *  <br> - Checks if medals are unlocked
- *  @param {String} saveName
- *  @memberof Medals */
-function medalsInit(saveName) {
-  // check if medals are unlocked
-  medalsSaveName = saveName;
-  debugMedals || medals.forEach((medal) => (medal.unlocked = localStorage[medal.storageKey()] | 0));
-}
-
-/**
- * Medal Object - Tracks an unlockable medal
- * @example
- * // create a medal
- * const medal_example = new Medal(0, 'Example Medal', 'More info about the medal goes here.', '🎖️');
- *
- * // initialize medals
- * medalsInit('Example Game');
- *
- * // unlock the medal
- * medal_example.unlock();
- */
-class Medal {
-  /** Create an medal object and adds it to the list of medals
-   *  @param {Number} id            - The unique identifier of the medal
-   *  @param {String} name          - Name of the medal
-   *  @param {String} [description] - Description of the medal
-   *  @param {String} [icon='🏆']  - Icon for the medal
-   *  @param {String} [src]         - Image location for the medal
-   */
-  constructor(id, name, description = '', icon = '🏆', src) {
-    ASSERT(id >= 0 && !medals[id]);
-
-    // save attributes and add to list of medals
-    medals[(this.id = id)] = this;
-    this.name = name;
-    this.description = description;
-    this.icon = icon;
-    if (src) (this.image = new Image()).src = src;
-  }
-
-  /** Unlocks a medal if not already unlocked */
-  unlock() {
-    if (medalsPreventUnlock || this.unlocked) return;
-
-    // save the medal
-    ASSERT(medalsSaveName); // save name must be set
-    localStorage[this.storageKey()] = this.unlocked = 1;
-    medalsDisplayQueue.push(this);
-    newgrounds && newgrounds.unlockMedal(this.id);
-  }
-
-  /** Render a medal
-   *  @param {Number} [hidePercent=0] - How much to slide the medal off screen
-   */
-  render(hidePercent = 0) {
-    const context = overlayContext;
-    const width = min(medalDisplaySize.x, mainCanvas.width);
-    const x = overlayCanvas.width - width;
-    const y = -medalDisplaySize.y * hidePercent;
-
-    // draw containing rect and clip to that region
-    context.save();
-    context.beginPath();
-    context.fillStyle = new Color(0.9, 0.9, 0.9);
-    context.strokeStyle = new Color(0, 0, 0);
-    context.lineWidth = 3;
-    context.fill(context.rect(x, y, width, medalDisplaySize.y));
-    context.stroke();
-    context.clip();
-
-    // draw the icon and text
-    this.renderIcon(vec2(x + 15 + medalDisplayIconSize / 2, y + medalDisplaySize.y / 2));
-    const pos = vec2(x + medalDisplayIconSize + 30, y + 28);
-    drawTextScreen(this.name, pos, 38, new Color(0, 0, 0), 0, 0, 'left');
-    pos.y += 32;
-    drawTextScreen(this.description, pos, 24, new Color(0, 0, 0), 0, 0, 'left');
-    context.restore();
-  }
-
-  /** Render the icon for a medal
-   *  @param {Number} x - Screen space X position
-   *  @param {Number} y - Screen space Y position
-   *  @param {Number} [size=medalDisplayIconSize] - Screen space size
-   */
-  renderIcon(pos, size = medalDisplayIconSize) {
-    // draw the image or icon
-    if (this.image) overlayContext.drawImage(this.image, pos.x - size / 2, pos.y - size / 2, size, size);
-    else drawTextScreen(this.icon, pos, size * 0.7, new Color(0, 0, 0));
-  }
-
-  // Get local storage key used by the medal
-  storageKey() {
-    return medalsSaveName + '_' + this.id;
-  }
-}
-
-// engine automatically renders medals
-function medalsRender() {
-  if (!medalsDisplayQueue.length) return;
-
-  // update first medal in queue
-  const medal = medalsDisplayQueue[0];
-  const time = timeReal - medalsDisplayTimeLast;
-  if (!medalsDisplayTimeLast) medalsDisplayTimeLast = timeReal;
-  else if (time > medalDisplayTime) medalsDisplayQueue.shift((medalsDisplayTimeLast = 0));
-  else {
-    // slide on/off medals
-    const slideOffTime = medalDisplayTime - medalDisplaySlideTime;
-    const hidePercent =
-      time < medalDisplaySlideTime
-        ? 1 - time / medalDisplaySlideTime
-        : time > slideOffTime
-        ? (time - slideOffTime) / medalDisplaySlideTime
-        : 0;
-    medal.render(hidePercent);
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-// global Newgrounds object
-let newgrounds;
-
-/** This can used to enable Newgrounds functionality
- *  @param {Number} app_id   - The newgrounds App ID
- *  @param {String} [cipher] - The encryption Key (AES-128/Base64)
- *  @memberof Medals */
-function newgroundsInit(app_id, cipher) {
-  newgrounds = new Newgrounds(app_id, cipher);
-}
-
-/**
- * Newgrounds API wrapper object
- * @example
- * // create a newgrounds object, replace the app id and cipher with your own
- * const app_id = '53123:1ZuSTQ9l';
- * const cipher = 'enF0vGH@Mj/FRASKL23Q==';
- * newgrounds = new Newgrounds(app_id, cipher);
- */
-class Newgrounds {
-  /** Create a newgrounds object
-   *  @param {Number} app_id   - The newgrounds App ID
-   *  @param {String} [cipher] - The encryption Key (AES-128/Base64) */
-  constructor(app_id, cipher) {
-    ASSERT(!newgrounds && app_id);
-
-    this.app_id = app_id;
-    this.cipher = cipher;
-    this.host = location ? location.hostname : '';
-
-    // create an instance of CryptoJS for encrypted calls
-    if (cipher) this.cryptoJS = this.CryptoJS();
-
-    // get session id from url search params
-    const url = new URL(location.href);
-    this.session_id = url.searchParams.get('ngio_session_id');
-
-    if (!this.session_id) return; // only use newgrounds when logged in
-
-    // get medals
-    const medalsResult = this.call('Medal.getList');
-    this.medals = medalsResult ? medalsResult.result.data['medals'] : [];
-    debugMedals && console.log(this.medals);
-    for (const newgroundsMedal of this.medals) {
-      const medal = medals[newgroundsMedal['id']];
-      if (medal) {
-        // copy newgrounds medal data
-        medal.image = new Image();
-        medal.image.src = newgroundsMedal['icon'];
-        medal.name = newgroundsMedal['name'];
-        medal.description = newgroundsMedal['description'];
-        medal.unlocked = newgroundsMedal['unlocked'];
-        medal.difficulty = newgroundsMedal['difficulty'];
-        medal.value = newgroundsMedal['value'];
-
-        if (medal.value) medal.description = medal.description + ' (' + medal.value + ')';
-      }
-    }
-
-    // get scoreboards
-    const scoreboardResult = this.call('ScoreBoard.getBoards');
-    this.scoreboards = scoreboardResult ? scoreboardResult.result.data.scoreboards : [];
-    debugMedals && console.log(this.scoreboards);
-
-    const keepAliveMS = 5 * 60 * 1e3;
-    setInterval(() => this.call('Gateway.ping', 0, 1), keepAliveMS);
-  }
-
-  /** Send message to unlock a medal by id
-   * @param {Number} id - The medal id */
-  unlockMedal(id) {
-    return this.call('Medal.unlock', { id: id }, 1);
-  }
-
-  /** Send message to post score
-   * @param {Number} id    - The scoreboard id
-   * @param {Number} value - The score value */
-  postScore(id, value) {
-    return this.call('ScoreBoard.postScore', { id: id, value: value }, 1);
-  }
-
-  /** Get scores from a scoreboard
-   * @param {Number} id         - The scoreboard id
-   * @param {String} [user=0]   - A user's id or name
-   * @param {Number} [social=0] - If true, only social scores will be loaded
-   * @param {Number} [skip=0]   - Number of scores to skip before start
-   * @param {Number} [limit=10] - Number of scores to include in the list
-   * @return {Object}           - The response JSON object
-   */
-  getScores(id, user = 0, social = 0, skip = 0, limit = 10) {
-    return this.call('ScoreBoard.getScores', { id: id, user: user, social: social, skip: skip, limit: limit });
-  }
-
-  /** Send message to log a view */
-  logView() {
-    return this.call('App.logView', { host: this.host }, 1);
-  }
-
-  /** Send a message to call a component of the Newgrounds API
-   * @param {String}  component      - Name of the component
-   * @param {Object}  [parameters=0] - Parameters to use for call
-   * @param {Boolean} [async=0]      - If true, don't wait for response before continuing (avoid stall)
-   * @return {Object}                - The response JSON object
-   */
-  call(component, parameters = 0, async = 0) {
-    const call = { component: component, parameters: parameters };
-    if (this.cipher) {
-      // encrypt using AES-128 Base64 with cryptoJS
-      const cryptoJS = this.cryptoJS;
-      const aesKey = cryptoJS['enc']['Base64']['parse'](this.cipher);
-      const iv = cryptoJS['lib']['WordArray']['random'](16);
-      const encrypted = cryptoJS['AES']['encrypt'](JSON.stringify(call), aesKey, { iv: iv });
-      call['secure'] = cryptoJS['enc']['Base64']['stringify'](iv.concat(encrypted['ciphertext']));
-      call['parameters'] = 0;
-    }
-
-    // build the input object
-    const input = {
-      app_id: this.app_id,
-      session_id: this.session_id,
-      call: call,
-    };
-
-    // build post data
-    const formData = new FormData();
-    formData.append('input', JSON.stringify(input));
-
-    // send post data
-    const xmlHttp = new XMLHttpRequest();
-    const url = 'https://newgrounds.io/gateway_v3.php';
-    xmlHttp.open('POST', url, !debugMedals && async);
-    xmlHttp.send(formData);
-    debugMedals && console.log(xmlHttp.responseText);
-    return xmlHttp.responseText && JSON.parse(xmlHttp.responseText);
-  }
-
-  CryptoJS() {
-    ///////////////////////////////////////////////////////////////////////////////
-    // Crypto-JS - https://github.com/brix/crypto-js [The MIT License (MIT)]
-    // Copyright (c) 2009-2013 Jeff Mott  Copyright (c) 2013-2016 Evan Vosberg
-
-    return eval(
-      Function(
-        "[M='GBMGXz^oVYPPKKbB`agTXU|LxPc_ZBcMrZvCr~wyGfWrwk@ATqlqeTp^N?p{we}jIpEnB_sEr`l?YDkDhWhprc|Er|XETG?pTl`e}dIc[_N~}fzRycIfpW{HTolvoPB_FMe_eH~BTMx]yyOhv?biWPCGc]kABencBhgERHGf{OL`Dj`c^sh@canhy[secghiyotcdOWgO{tJIE^JtdGQRNSCrwKYciZOa]Y@tcRATYKzv|sXpboHcbCBf`}SKeXPFM|RiJsSNaIb]QPc[D]Jy_O^XkOVTZep`ONmntLL`Qz~UupHBX_Ia~WX]yTRJIxG`ioZ{fefLJFhdyYoyLPvqgH?b`[TMnTwwfzDXhfM?rKs^aFr|nyBdPmVHTtAjXoYUloEziWDCw_suyYT~lSMksI~ZNCS[Bex~j]Vz?kx`gdYSEMCsHpjbyxQvw|XxX_^nQYue{sBzVWQKYndtYQMWRef{bOHSfQhiNdtR{o?cUAHQAABThwHPT}F{VvFmgN`E@FiFYS`UJmpQNM`X|tPKHlccT}z}k{sACHL?Rt@MkWplxO`ASgh?hBsuuP|xD~LSH~KBlRs]t|l|_tQAroDRqWS^SEr[sYdPB}TAROtW{mIkE|dWOuLgLmJrucGLpebrAFKWjikTUzS|j}M}szasKOmrjy[?hpwnEfX[jGpLt@^v_eNwSQHNwtOtDgWD{rk|UgASs@mziIXrsHN_|hZuxXlPJOsA^^?QY^yGoCBx{ekLuZzRqQZdsNSx@ezDAn{XNj@fRXIwrDX?{ZQHwTEfu@GhxDOykqts|n{jOeZ@c`dvTY?e^]ATvWpb?SVyg]GC?SlzteilZJAL]mlhLjYZazY__qcVFYvt@|bIQnSno@OXyt]OulzkWqH`rYFWrwGs`v|~XeTsIssLrbmHZCYHiJrX}eEzSssH}]l]IhPQhPoQ}rCXLyhFIT[clhzYOvyHqigxmjz`phKUU^TPf[GRAIhNqSOdayFP@FmKmuIzMOeoqdpxyCOwCthcLq?n`L`tLIBboNn~uXeFcPE{C~mC`h]jUUUQe^`UqvzCutYCgct|SBrAeiYQW?X~KzCz}guXbsUw?pLsg@hDArw?KeJD[BN?GD@wgFWCiHq@Ypp_QKFixEKWqRp]oJFuVIEvjDcTFu~Zz]a{IcXhWuIdMQjJ]lwmGQ|]g~c]Hl]pl`Pd^?loIcsoNir_kikBYyg?NarXZEGYspt_vLBIoj}LI[uBFvm}tbqvC|xyR~a{kob|HlctZslTGtPDhBKsNsoZPuH`U`Fqg{gKnGSHVLJ^O`zmNgMn~{rsQuoymw^JY?iUBvw_~mMr|GrPHTERS[MiNpY[Mm{ggHpzRaJaoFomtdaQ_?xuTRm}@KjU~RtPsAdxa|uHmy}n^i||FVL[eQAPrWfLm^ndczgF~Nk~aplQvTUpHvnTya]kOenZlLAQIm{lPl@CCTchvCF[fI{^zPkeYZTiamoEcKmBMfZhk_j_~Fjp|wPVZlkh_nHu]@tP|hS@^G^PdsQ~f[RqgTDqezxNFcaO}HZhb|MMiNSYSAnQWCDJukT~e|OTgc}sf[cnr?fyzTa|EwEtRG|I~|IO}O]S|rp]CQ}}DWhSjC_|z|oY|FYl@WkCOoPuWuqr{fJu?Brs^_EBI[@_OCKs}?]O`jnDiXBvaIWhhMAQDNb{U`bqVR}oqVAvR@AZHEBY@depD]OLh`kf^UsHhzKT}CS}HQKy}Q~AeMydXPQztWSSzDnghULQgMAmbWIZ|lWWeEXrE^EeNoZApooEmrXe{NAnoDf`m}UNlRdqQ@jOc~HLOMWs]IDqJHYoMziEedGBPOxOb?[X`KxkFRg@`mgFYnP{hSaxwZfBQqTm}_?RSEaQga]w[vxc]hMne}VfSlqUeMo_iqmd`ilnJXnhdj^EEFifvZyxYFRf^VaqBhLyrGlk~qowqzHOBlOwtx?i{m~`n^G?Yxzxux}b{LSlx]dS~thO^lYE}bzKmUEzwW^{rPGhbEov[Plv??xtyKJshbG`KuO?hjBdS@Ru}iGpvFXJRrvOlrKN?`I_n_tplk}kgwSXuKylXbRQ]]?a|{xiT[li?k]CJpwy^o@ebyGQrPfF`aszGKp]baIx~H?ElETtFh]dz[OjGl@C?]VDhr}OE@V]wLTc[WErXacM{We`F|utKKjgllAxvsVYBZ@HcuMgLboFHVZmi}eIXAIFhS@A@FGRbjeoJWZ_NKd^oEH`qgy`q[Tq{x?LRP|GfBFFJV|fgZs`MLbpPYUdIV^]mD@FG]pYAT^A^RNCcXVrPsgk{jTrAIQPs_`mD}rOqAZA[}RETFz]WkXFTz_m{N@{W@_fPKZLT`@aIqf|L^Mb|crNqZ{BVsijzpGPEKQQZGlApDn`ruH}cvF|iXcNqK}cxe_U~HRnKV}sCYb`D~oGvwG[Ca|UaybXea~DdD~LiIbGRxJ_VGheI{ika}KC[OZJLn^IBkPrQj_EuoFwZ}DpoBRcK]Q}?EmTv~i_Tul{bky?Iit~tgS|o}JL_VYcCQdjeJ_MfaA`FgCgc[Ii|CBHwq~nbJeYTK{e`CNstKfTKPzw{jdhp|qsZyP_FcugxCFNpKitlR~vUrx^NrSVsSTaEgnxZTmKc`R|lGJeX}ccKLsQZQhsFkeFd|ckHIVTlGMg`~uPwuHRJS_CPuN_ogXe{Ba}dO_UBhuNXby|h?JlgBIqMKx^_u{molgL[W_iavNQuOq?ap]PGB`clAicnl@k~pA?MWHEZ{HuTLsCpOxxrKlBh]FyMjLdFl|nMIvTHyGAlPogqfZ?PlvlFJvYnDQd}R@uAhtJmDfe|iJqdkYr}r@mEjjIetDl_I`TELfoR|qTBu@Tic[BaXjP?dCS~MUK[HPRI}OUOwAaf|_}HZzrwXvbnNgltjTwkBE~MztTQhtRSWoQHajMoVyBBA`kdgK~h`o[J`dm~pm]tk@i`[F~F]DBlJKklrkR]SNw@{aG~Vhl`KINsQkOy?WhcqUMTGDOM_]bUjVd|Yh_KUCCgIJ|LDIGZCPls{RzbVWVLEhHvWBzKq|^N?DyJB|__aCUjoEgsARki}j@DQXS`RNU|DJ^a~d{sh_Iu{ONcUtSrGWW@cvUjefHHi}eSSGrNtO?cTPBShLqzwMVjWQQCCFB^culBjZHEK_{dO~Q`YhJYFn]jq~XSnG@[lQr]eKrjXpG~L^h~tDgEma^AUFThlaR{xyuP@[^VFwXSeUbVetufa@dX]CLyAnDV@Bs[DnpeghJw^?UIana}r_CKGDySoRudklbgio}kIDpA@McDoPK?iYcG?_zOmnWfJp}a[JLR[stXMo?_^Ng[whQlrDbrawZeSZ~SJstIObdDSfAA{MV}?gNunLOnbMv_~KFQUAjIMj^GkoGxuYtYbGDImEYiwEMyTpMxN_LSnSMdl{bg@dtAnAMvhDTBR_FxoQgANniRqxd`pWv@rFJ|mWNWmh[GMJz_Nq`BIN@KsjMPASXORcdHjf~rJfgZYe_uulzqM_KdPlMsuvU^YJuLtofPhGonVOQxCMuXliNvJIaoC?hSxcxKVVxWlNs^ENDvCtSmO~WxI[itnjs^RDvI@KqG}YekaSbTaB]ki]XM@[ZnDAP~@|BzLRgOzmjmPkRE@_sobkT|SszXK[rZN?F]Z_u}Yue^[BZgLtR}FHzWyxWEX^wXC]MJmiVbQuBzkgRcKGUhOvUc_bga|Tx`KEM`JWEgTpFYVeXLCm|mctZR@uKTDeUONPozBeIkrY`cz]]~WPGMUf`MNUGHDbxZuO{gmsKYkAGRPqjc|_FtblEOwy}dnwCHo]PJhN~JoteaJ?dmYZeB^Xd?X^pOKDbOMF@Ugg^hETLdhwlA}PL@_ur|o{VZosP?ntJ_kG][g{Zq`Tu]dzQlSWiKfnxDnk}KOzp~tdFstMobmy[oPYjyOtUzMWdjcNSUAjRuqhLS@AwB^{BFnqjCmmlk?jpn}TksS{KcKkDboXiwK]qMVjm~V`LgWhjS^nLGwfhAYrjDSBL_{cRus~{?xar_xqPlArrYFd?pHKdMEZzzjJpfC?Hv}mAuIDkyBxFpxhstTx`IO{rp}XGuQ]VtbHerlRc_LFGWK[XluFcNGUtDYMZny[M^nVKVeMllQI[xtvwQnXFlWYqxZZFp_|]^oWX[{pOMpxXxvkbyJA[DrPzwD|LW|QcV{Nw~U^dgguSpG]ClmO@j_TENIGjPWwgdVbHganhM?ema|dBaqla|WBd`poj~klxaasKxGG^xbWquAl~_lKWxUkDFagMnE{zHug{b`A~IYcQYBF_E}wiA}K@yxWHrZ{[d~|ARsYsjeNWzkMs~IOqqp[yzDE|WFrivsidTcnbHFRoW@XpAV`lv_zj?B~tPCppRjgbbDTALeFaOf?VcjnKTQMLyp{NwdylHCqmo?oelhjWuXj~}{fpuX`fra?GNkDiChYgVSh{R[BgF~eQa^WVz}ATI_CpY?g_diae]|ijH`TyNIF}|D_xpmBq_JpKih{Ba|sWzhnAoyraiDvk`h{qbBfsylBGmRH}DRPdryEsSaKS~tIaeF[s]I~xxHVrcNe@Jjxa@jlhZueLQqHh_]twVMqG_EGuwyab{nxOF?`HCle}nBZzlTQjkLmoXbXhOtBglFoMz?eqre`HiE@vNwBulglmQjj]DB@pPkPUgA^sjOAUNdSu_`oAzar?n?eMnw{{hYmslYi[TnlJD'",
-        ...']charCodeAtUinyxpf',
-        "for(;e<10359;c[e++]=p-=128,A=A?p-A&&A:p==34&&p)for(p=1;p<128;y=f.map((n,x)=>(U=r[n]*2+1,U=Math.log(U/(h-U)),t-=a[x]*U,U/500)),t=~-h/(1+Math.exp(t))|1,i=o%h<t,o=o%h+(i?t:h-t)*(o>>17)-!i*t,f.map((n,x)=>(U=r[n]+=(i*h/2-r[n]<<13)/((C[n]+=C[n]<5)+1/20)>>13,a[x]+=y[x]*(i-t/h))),p=p*2+i)for(f='010202103203210431053105410642065206541'.split(t=0).map((n,x)=>(U=0,[...n].map((n,x)=>(U=U*997+(c[e-n]|0)|0)),h*32-1&U*997+p+!!A*129)*12+x);o<h*32;o=o*64|M.charCodeAt(d++)&63);for(C=String.fromCharCode(...c);r=/[\0-#?@\\\\~]/.exec(C);)with(C.split(r))C=join(shift());return C"
-      )(
-        [],
-        [],
-        1 << 17,
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        new Uint16Array(51e6).fill(1 << 15),
-        new Uint8Array(51e6),
-        0,
-        0,
-        0,
-        0
-      )
-    );
-  }
-}
 /**
  * LittleJS WebGL Interface
  * <br> - All webgl used by the engine is wrapped up here
@@ -3972,7 +1998,6 @@ function glInit() {
   // create the canvas and tile texture
   glCanvas = document.createElement('canvas');
   glContext = glCanvas.getContext('webgl', { antialias: false });
-  glTileTexture = glCreateTexture(tileImage);
 
   // some browsers are much faster without copying the gl buffer so we just overlay it instead
   glOverlay && document.body.appendChild(glCanvas);
@@ -4193,8 +2218,6 @@ let glPostShader, glPostArrayBuffer, glPostTexture, glPostIncludeOverlay;
  *  @param {Boolean} includeOverlay
  *  @memberof WebGL */
 function glInitPostProcess(shaderCode, includeOverlay) {
-  ASSERT(!glPostShader); // can only have 1 post effects shader
-
   if (!shaderCode)
     // default shader
     shaderCode = 'void mainImage(out vec4 c,vec2 p){c=texture2D(iChannel0,p/iResolution.xy);}';
@@ -4405,52 +2428,44 @@ function setPaused(_paused) {
  *  @param {Function} gameUpdatePost  - Called after physics and objects are updated, setup camera and prepare for render
  *  @param {Function} gameRender      - Called before objects are rendered, draw any background effects that appear behind objects
  *  @param {Function} gameRenderPost  - Called after objects are rendered, draw effects or hud that appear above all objects
- *  @param {String} [tileImageSource] - Tile image to use, everything starts when the image is finished loading
  *  @memberof Engine */
-function engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRenderPost, tileImageSource) {
+function engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRenderPost) {
   // init engine when tiles load or fail to load
-  tileImage.onerror = tileImage.onload = () => {
-    // save tile image info
-    tileImageFixBleed = vec2(tileFixBleedScale).divide((tileImageSize = vec2(tileImage.width, tileImage.height)));
-    debug && (tileImage.onload = () => ASSERT(1)); // tile sheet can not reloaded
 
-    // setup html
-    const styleBody =
-      'margin:0;overflow:hidden;background:#000' + // fill the window
-      ';touch-action:none' + // prevent mobile pinch to resize
-      ';user-select:none' + // prevent mobile hold to select
-      ';-webkit-user-select:none'; // compatibility for ios
-    document.body.style = styleBody;
-    document.body.appendChild((mainCanvas = document.createElement('canvas')));
-    mainContext = mainCanvas.getContext('2d');
+  // setup html
+  const styleBody =
+    'margin:0;overflow:hidden;background:#000' + // fill the window
+    ';touch-action:none' + // prevent mobile pinch to resize
+    ';user-select:none' + // prevent mobile hold to select
+    ';-webkit-user-select:none'; // compatibility for ios
+  document.body.style = styleBody;
+  document.body.appendChild((mainCanvas = document.createElement('canvas')));
+  mainContext = mainCanvas.getContext('2d');
 
-    // init stuff and start engine
-    debugInit();
-    glEnable && glInit();
+  // init stuff and start engine
 
-    // create overlay canvas for hud to appear above gl canvas
-    document.body.appendChild((overlayCanvas = document.createElement('canvas')));
-    overlayContext = overlayCanvas.getContext('2d');
+  glEnable && glInit();
 
-    // set canvas style to fill the window
-    const styleCanvas = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)';
-    (glCanvas || mainCanvas).style = mainCanvas.style = overlayCanvas.style = styleCanvas;
+  // create overlay canvas for hud to appear above gl canvas
+  document.body.appendChild((overlayCanvas = document.createElement('canvas')));
+  overlayContext = overlayCanvas.getContext('2d');
 
-    gameInit();
-    engineUpdate();
-  };
+  // set canvas style to fill the window
+  const styleCanvas = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)';
+  (glCanvas || mainCanvas).style = mainCanvas.style = overlayCanvas.style = styleCanvas;
 
   // frame time tracking
   let frameTimeLastMS = 0,
-    frameTimeBufferMS,
-    averageFPS;
+    frameTimeBufferMS;
+  gameInit();
+  engineUpdate();
 
   // main update loop
   function engineUpdate(frameTimeMS = 0) {
     // update time keeping
     let frameTimeDeltaMS = frameTimeMS - frameTimeLastMS;
     frameTimeLastMS = frameTimeMS;
-    if (debug || showWatermark) averageFPS = lerp(0.05, averageFPS, 1e3 / (frameTimeDeltaMS || 1));
+
     const debugSpeedUp = debug && keyIsDown(107); // +
     const debugSpeedDown = debug && keyIsDown(109); // -
     if (debug)
@@ -4492,7 +2507,6 @@ function engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRender
     if (paused) {
       // do post update even when paused
       inputUpdate();
-      debugUpdate();
       gameUpdatePost();
       inputUpdatePost();
     } else {
@@ -4512,7 +2526,6 @@ function engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRender
         engineObjectsUpdate();
 
         // do post update
-        debugUpdate();
         gameUpdatePost();
         inputUpdatePost();
       }
@@ -4528,40 +2541,10 @@ function engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRender
     for (const o of engineObjects) o.destroyed || o.render();
     gameRenderPost();
     glRenderPostProcess();
-    medalsRender();
-    touchGamepadRender();
-    debugRender();
     glEnable && glCopyToContext(mainContext);
-
-    if (showWatermark) {
-      // update fps
-      overlayContext.textAlign = 'right';
-      overlayContext.textBaseline = 'top';
-      overlayContext.font = '1em monospace';
-      overlayContext.fillStyle = '#000';
-      const text =
-        engineName +
-        ' ' +
-        'v' +
-        engineVersion +
-        ' / ' +
-        drawCount +
-        ' / ' +
-        engineObjects.length +
-        ' / ' +
-        averageFPS.toFixed(1) +
-        (glEnable ? ' GL' : ' 2D');
-      overlayContext.fillText(text, mainCanvas.width - 3, 3);
-      overlayContext.fillStyle = '#fff';
-      overlayContext.fillText(text, mainCanvas.width - 2, 2);
-      drawCount = 0;
-    }
 
     requestAnimationFrame(engineUpdate);
   }
-
-  // set tile image source to load the image and start the engine
-  tileImageSource ? (tileImage.src = tileImageSource) : tileImage.onload();
 }
 
 // Called automatically by engine to setup render system
@@ -4672,16 +2655,6 @@ const setGlEnable = (enable) => (glEnable = enable);
  *  @memberof Settings */
 const setGlOverlay = (overlay) => (glOverlay = overlay);
 
-/** Set default size of tiles in pixels
- *  @param {Vector2} size
- *  @memberof Settings */
-const setTileSizeDefault = (size) => (tileSizeDefault = size);
-
-/** Set to prevent tile bleeding from neighbors in pixels
- *  @param {Number} scale
- *  @memberof Settings */
-const setTileFixBleedScale = (scale) => (tileFixBleedScale = scale);
-
 /** Set if collisions between objects are enabled
  *  @param {Boolean} enable
  *  @memberof Settings */
@@ -4722,45 +2695,10 @@ const setObjectMaxSpeed = (speed) => (objectMaxSpeed = speed);
  *  @memberof Settings */
 const setGravity = (g) => (gravity = g);
 
-/** Set to scales emit rate of particles
- *  @param {Number} scale
- *  @memberof Settings */
-const setParticleEmitRateScale = (scale) => (particleEmitRateScale = scale);
-
-/** Set if gamepads are enabled
- *  @param {Boolean} enable
- *  @memberof Settings */
-const setGamepadsEnable = (enable) => (gamepadsEnable = enable);
-
-/** Set if the dpad input is also routed to the left analog stick
- *  @param {Boolean} enable
- *  @memberof Settings */
-const setGamepadDirectionEmulateStick = (enable) => (gamepadDirectionEmulateStick = enable);
-
 /** Set if true the WASD keys are also routed to the direction keys
  *  @param {Boolean} enable
  *  @memberof Settings */
 const setInputWASDEmulateDirection = (enable) => (inputWASDEmulateDirection = enable);
-
-/** Set if touch gamepad should appear on mobile devices
- *  @param {Boolean} enable
- *  @memberof Settings */
-const setTouchGamepadEnable = (enable) => (touchGamepadEnable = enable);
-
-/** Set if touch gamepad should be analog stick or 8 way dpad
- *  @param {Boolean} analog
- *  @memberof Settings */
-const setTouchGamepadAnalog = (analog) => (touchGamepadAnalog = analog);
-
-/** Set size of virutal gamepad for touch devices in pixels
- *  @param {Number} size
- *  @memberof Settings */
-const setTouchGamepadSize = (size) => (touchGamepadSize = size);
-
-/** Set transparency of touch gamepad overlay
- *  @param {Number} alpha
- *  @memberof Settings */
-const setTouchGamepadAlpha = (alpha) => (touchGamepadAlpha = alpha);
 
 /** Set to allow vibration hardware if it exists
  *  @param {Boolean} enable
@@ -4787,46 +2725,6 @@ const setSoundDefaultRange = (range) => (soundDefaultRange = range);
  *  @memberof Settings */
 const setSoundDefaultTaper = (taper) => (soundDefaultTaper = taper);
 
-/** Set how long to show medals for in seconds
- *  @param {Number} time
- *  @memberof Settings */
-const setMedalDisplayTime = (time) => (medalDisplayTime = time);
-
-/** Set how quickly to slide on/off medals in seconds
- *  @param {Number} time
- *  @memberof Settings */
-const setMedalDisplaySlideTime = (time) => (medalDisplaySlideTime = time);
-
-/** Set size of medal display
- *  @param {Vector2} size
- *  @memberof Settings */
-const setMedalDisplaySize = (size) => (medalDisplaySize = size);
-
-/** Set size of icon in medal display
- *  @param {Number} size
- *  @memberof Settings */
-const setMedalDisplayIconSize = (size) => (medalDisplayIconSize = size);
-
-/** Set to stop medals from being unlockable
- *  @param {Boolean} preventUnlock
- *  @memberof Settings */
-const setMedalsPreventUnlock = (prevent) => (medalsPreventUnlock = prevent);
-
-/** Set if watermark with FPS should be shown
- *  @param {Boolean} show
- *  @memberof Debug */
-const setShowWatermark = (show) => (showWatermark = show);
-
-/** Set if god mode is enabled
- *  @param {Boolean} enable
- *  @memberof Debug */
-const setGodMode = (enable) => (godMode = enable);
-
-/** Set key code used to toggle debug mode, Esc by default
- *  @param {Number} key
- *  @memberof Debug */
-const setDebugKey = (key) => (debugKey = key);
-
 export {
   // Setters for global variables
   setCameraPos,
@@ -4837,8 +2735,6 @@ export {
   setFontDefault,
   setGlEnable,
   setGlOverlay,
-  setTileSizeDefault,
-  setTileFixBleedScale,
   setEnablePhysicsSolver,
   setObjectDefaultMass,
   setObjectDefaultDamping,
@@ -4847,35 +2743,18 @@ export {
   setObjectDefaultFriction,
   setObjectMaxSpeed,
   setGravity,
-  setParticleEmitRateScale,
-  setGamepadsEnable,
-  setGamepadDirectionEmulateStick,
   setInputWASDEmulateDirection,
-  setTouchGamepadEnable,
-  setTouchGamepadAnalog,
-  setTouchGamepadSize,
-  setTouchGamepadAlpha,
   setVibrateEnable,
   setSoundEnable,
   setSoundVolume,
   setSoundDefaultRange,
   setSoundDefaultTaper,
-  setMedalDisplayTime,
-  setMedalDisplaySlideTime,
-  setMedalDisplaySize,
-  setMedalDisplayIconSize,
-  setMedalsPreventUnlock,
-  setShowWatermark,
-  setGodMode,
-  setDebugKey,
 
   // Settings
   canvasMaxSize,
   canvasFixedSize,
   cavasPixelated,
   fontDefault,
-  tileSizeDefault,
-  tileFixBleedScale,
   enablePhysicsSolver,
   objectDefaultMass,
   objectDefaultDamping,
@@ -4884,43 +2763,19 @@ export {
   objectDefaultFriction,
   objectMaxSpeed,
   gravity,
-  particleEmitRateScale,
   cameraPos,
   cameraScale,
   glEnable,
   glOverlay,
-  gamepadsEnable,
-  gamepadDirectionEmulateStick,
   inputWASDEmulateDirection,
-  touchGamepadEnable,
-  touchGamepadAnalog,
-  touchGamepadSize,
-  touchGamepadAlpha,
   vibrateEnable,
   soundEnable,
   soundVolume,
   soundDefaultRange,
   soundDefaultTaper,
-  medalDisplayTime,
-  medalDisplaySlideTime,
-  medalDisplaySize,
-  medalDisplayIconSize,
 
   // Globals
   debug,
-  showWatermark,
-  godMode,
-
-  // Debug
-  ASSERT,
-  debugRect,
-  debugCircle,
-  debugPoint,
-  debugLine,
-  debugAABB,
-  debugText,
-  debugClear,
-  debugSaveCanvas,
 
   // Utilities
   PI,
@@ -4961,7 +2816,6 @@ export {
   EngineObject,
 
   // Draw
-  tileImage,
   mainCanvas,
   mainContext,
   overlayCanvas,
@@ -4969,17 +2823,11 @@ export {
   mainCanvasSize,
   screenToWorld,
   worldToScreen,
-  drawTile,
   drawRect,
-  drawTileScreenSpace,
   drawRectScreenSpace,
   drawLine,
   drawCanvas2D,
   setBlendMode,
-  drawTextScreen,
-  drawText,
-  engineFontImage,
-  FontImage,
   isFullscreen,
   toggleFullscreen,
 
@@ -4994,14 +2842,8 @@ export {
   mousePos,
   mousePosScreen,
   mouseWheel,
-  isUsingGamepad,
   preventDefaultInput,
-  gamepadIsDown,
-  gamepadWasPressed,
-  gamepadWasReleased,
-  gamepadStick,
   mouseToScreen,
-  gamepadsUpdate,
   vibrate,
   vibrateStop,
   isTouchDevice,
@@ -5016,29 +2858,6 @@ export {
   audioContext,
   playSamples,
   zzfx,
-
-  // Tiles
-  tileCollision,
-  tileCollisionSize,
-  initTileCollision,
-  setTileCollisionData,
-  getTileCollisionData,
-  tileCollisionTest,
-  tileCollisionRaycast,
-  TileLayerData,
-  TileLayer,
-
-  // Particles
-  ParticleEmitter,
-  Particle,
-
-  // Medals
-  medals,
-  medalsPreventUnlock,
-  medalsInit,
-  newgroundsInit,
-  Medal,
-  Newgrounds,
 
   // WebGL
   glCanvas,
