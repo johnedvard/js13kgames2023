@@ -1,4 +1,4 @@
-import { vec2, mainContext, canvasFixedSize, gravity } from './littlejs';
+import { vec2, mainContext, canvasFixedSize, gravity, getTimeSpeedScale } from './littlejs';
 
 import { MySvg } from './MySvg';
 import { lanternBodyPath, lanternTipPath } from './svgPaths';
@@ -70,7 +70,7 @@ export class Lantern {
       return;
     }
     // const centerPos = this.getCenterPos();
-    this.velocity.y -= gravity * this.gravitationScale;
+    this.velocity.y -= gravity * this.gravitationScale * getTimeSpeedScale();
     this.pos.x += this.velocity.x;
     this.pos.y += this.velocity.y;
     this.getSvgs().forEach((svg) => {

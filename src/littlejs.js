@@ -2420,6 +2420,13 @@ function setPaused(_paused) {
   paused = _paused;
 }
 
+let timeSpeedScale = 1;
+function getTimeSpeedScale() {
+  return timeSpeedScale;
+}
+function setTimeSpeedScale(value) {
+  timeSpeedScale = value;
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 /** Start up LittleJS engine with your callback functions
@@ -2466,14 +2473,10 @@ function engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRender
     let frameTimeDeltaMS = frameTimeMS - frameTimeLastMS;
     frameTimeLastMS = frameTimeMS;
 
-    const debugSpeedUp = debug && keyIsDown(107); // +
-    const debugSpeedDown = debug && keyIsDown(109); // -
-    if (debug)
-      // +/- to speed/slow time
-      frameTimeDeltaMS *= debugSpeedUp ? 5 : debugSpeedDown ? 0.2 : 1;
+    // +/- to speed/slow time
     timeReal += frameTimeDeltaMS / 1e3;
     frameTimeBufferMS += !paused * frameTimeDeltaMS;
-    if (!debugSpeedUp) frameTimeBufferMS = min(frameTimeBufferMS, 50); // clamp incase of slow framerate
+    frameTimeBufferMS = min(frameTimeBufferMS, 50); // clamp incase of slow framerate
 
     if (canvasFixedSize.x) {
       // clear canvas and set fixed size
@@ -2884,4 +2887,8 @@ export {
   engineObjectsUpdate,
   engineObjectsDestroy,
   engineObjectsCallback,
+
+  // Custom stuff
+  getTimeSpeedScale,
+  setTimeSpeedScale,
 };

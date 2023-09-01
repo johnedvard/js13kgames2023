@@ -83,7 +83,6 @@ function getParasNftCollection(): Promise<INftCollection[]> {
   return fetch(api)
     .then((res) => res.json())
     .then((res) => {
-      console.log('res', res);
       return res.data.results.filter((data) => data['metadata']['copies'] > 0 && !data['is_non_mintable']);
     });
 }

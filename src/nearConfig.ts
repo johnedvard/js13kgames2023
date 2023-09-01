@@ -1,7 +1,6 @@
 const CONTARCT_NAME_MAINNET = 'x.paras.near';
 export let myKeyStore = '';
 export function getConfig() {
-  console.log('get config', myKeyStore);
   return {
     ['networkId']: 'mainnet',
     ['keyStore']: myKeyStore,

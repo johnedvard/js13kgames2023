@@ -1,4 +1,4 @@
-import { vec2, EngineObject, gravity } from './littlejs';
+import { vec2, EngineObject, gravity, getTimeSpeedScale } from './littlejs';
 
 import { parseSvg } from './parseSvg';
 
@@ -81,7 +81,7 @@ export class MySvg extends EngineObject {
   update(addedVelocity = vec2(0, 0)) {
     if (this.isCut()) return;
     const prevPos = vec2(this.pos.x, this.pos.y);
-    this.velocity.y += gravity * this.gravitationScale;
+    this.velocity.y += gravity * this.gravitationScale * getTimeSpeedScale();
     this.pos.x += this.velocity.x;
     this.pos.y += this.velocity.y;
     this.pos.y += addedVelocity.y;

@@ -1,8 +1,10 @@
+import { setTimeSpeedScale, timeDelta, overlayContext, canvasFixedSize } from './littlejs';
+
 import { GameOverScene } from './GameOverScene';
 import { Level } from './Level';
 import { MainMenu } from './MainMenu';
 import { Web3Scene } from './Web3Scene';
-import { on } from './gameEvents';
+import { off, on } from './gameEvents';
 import { startSceneTransition } from './startSceneTransition';
 
 type SceneType = 'm' | 'l' | 'w' | 'g' | '';
@@ -13,6 +15,7 @@ export class SceneManager {
   web3Scene: Web3Scene;
   gameOverScene: GameOverScene;
   isChangingScenes = false;
+  isOnKillProcedure = false;
 
   constructor() {
     // TODO (johnedvard) create level or main menu depending on current scene instead
@@ -29,11 +32,9 @@ export class SceneManager {
     this.isChangingScenes = true;
     // TODO (johnedvard) start an animation, and return a p
     const onMiddle = () => {
-      console.log('onMiddle');
       this.currentScene = '';
     };
     const onEnded = () => {
-      console.log('onEnded');
       this.currentScene = sceneType;
       this.isChangingScenes = false;
       switch (sceneType) {
@@ -47,9 +48,38 @@ export class SceneManager {
     startSceneTransition(1.5, onMiddle, onEnded);
   }
 
+  startOnKilledProcedure() {
+    this.isOnKillProcedure = true;
+
+    const maxTime = 1.5;
+    let ellapsedTime = 0;
+    const onTick = (_evt) => {
+      ellapsedTime += timeDelta;
+      if (ellapsedTime <= 1) {
+        overlayContext.fillStyle = `rgba(200, 200, 200, ${Math.min(0.9, ellapsedTime)})`;
+        overlayContext.moveTo(0, 0);
+        overlayContext.fillRect(0, 0, canvasFixedSize.x, canvasFixedSize.y);
+        setTimeSpeedScale(0.3);
+      } else {
+        overlayContext.fillStyle = `rgba(200, 200, 200, ${Math.max(0, 1.9 - ellapsedTime)})`;
+        overlayContext.moveTo(0, 0);
+        overlayContext.fillRect(0, 0, canvasFixedSize.x, canvasFixedSize.y);
+        setTimeSpeedScale(Math.min(1, ellapsedTime - 0.8));
+      }
+      if (ellapsedTime >= 1 && this.currentScene != 'g') {
+        this.changeScene('g');
+      }
+      if (ellapsedTime >= maxTime) {
+        this.isOnKillProcedure = false;
+        setTimeSpeedScale(1);
+        off('tick', onTick);
+      }
+    };
+    on('tick', onTick);
+  }
   onKilled = (_customEvent: CustomEvent) => {
-    if (this.isChangingScenes) return;
-    this.changeScene('g');
+    if (this.isChangingScenes || this.isOnKillProcedure) return;
+    this.startOnKilledProcedure();
   };
 
   onPlay = (_customEvent: CustomEvent) => {
