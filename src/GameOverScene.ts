@@ -18,16 +18,17 @@ export class GameOverScene {
   }
   onSplit = (evt) => {
     if (this.sceneManager.currentScene != 'g') return;
+    const other = evt.detail.data.svg;
     this.playButton.forEach((svg) => {
       if (this.isEventInProgress) return;
-      if (svg == evt.detail.data) {
+      if (svg == other) {
         this.isEventInProgress = true;
         emit('play');
       }
     });
     this.web3Button.forEach((svg) => {
       if (this.isEventInProgress) return;
-      if (svg == evt.detail.data) {
+      if (svg == other) {
         this.isEventInProgress = true;
         emit('web3');
       }

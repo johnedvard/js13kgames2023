@@ -227,7 +227,7 @@ export class MySvg extends EngineObject {
         newSvgs.forEach((svg) => {
           this.children.push(svg);
         });
-        emit('split', this);
+        emit('split', { svg: this, intersectionPoint: this.intersectionPoints[1].intersectionPoint });
       }
     }
   }

@@ -19,6 +19,7 @@ export function createNewSvgs(svg: MySvg, p: IntersectionPoint): MySvg[] {
     svg.getGravityScale()
   );
   newSvg1.setGravityScale(5);
+  newSvg1.velocity.x = -1;
   const newSvg2 = new MySvg(
     null,
     svg.cmds,
@@ -27,6 +28,7 @@ export function createNewSvgs(svg: MySvg, p: IntersectionPoint): MySvg[] {
     svg.pos.copy().add(vec2(0, 0), svg.velocity.copy(), svg.size.copy(), svg.getGravityScale())
   );
   newSvg2.setGravityScale(10);
+  newSvg2.velocity.x = 1;
   let cmdIndex = -1;
   const cmd: Cmd = svg.cmds.find((cmd, index) => {
     cmdIndex = index;

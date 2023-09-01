@@ -70,6 +70,8 @@ export class Lantern {
     if (this.svgBody.isCut()) {
       this.svgTipTop.setGravityScale(27);
       this.svgTipBot.setGravityScale(22);
+      this.svgTipBot.rotateSvg(-0.1, this.svgTipBot.getCenterPos());
+      this.svgTipTop.rotateSvg(0.1, this.svgTipTop.getCenterPos());
       this.svgBody.velocity.x = this.velocity.x;
       this.svgTipTop.velocity.x = this.velocity.x;
       this.svgTipBot.velocity.x = this.velocity.x;
@@ -91,9 +93,16 @@ export class Lantern {
     ctx.save();
     ctx.shadowBlur = 0;
     this.getSvgs().forEach((svg) => svg.render(ctx));
-    const x = this.centerPos.x + this.pos.x;
-    const y = this.centerPos.y + this.pos.y;
-    this.gradient = mainContext.createRadialGradient(x, y, 100, 200, canvasFixedSize.x - 100, 100);
+    // const x = this.centerPos.x + this.pos.x;
+    // const y = this.centerPos.y + this.pos.y;
+    this.gradient = mainContext.createRadialGradient(
+      canvasFixedSize.x / 2,
+      canvasFixedSize.y / 2,
+      0,
+      -100,
+      -100,
+      canvasFixedSize.y
+    );
 
     // Add three color stops
     this.gradient.addColorStop(0, getSecondaryColorFromSliceColor(this.sliceColor));

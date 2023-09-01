@@ -12,6 +12,7 @@ import { getColorFromSliceColor } from './colorUtils';
 import { bambooPath } from './svgPaths';
 import { handleSvgCollisions } from './handleSvgCollisions';
 import { SceneManager } from './SceneManager';
+import { addScore } from './addScore';
 
 export class Level {
   arrows: Arrow[] = [];
@@ -37,10 +38,13 @@ export class Level {
   }
   onSplit = (evt) => {
     if (this.sceneManager.currentScene != 'l') return;
-    const slicedColor = evt?.detail?.data?.sliceColor;
+    const other = evt.detail.data.svg;
+    const point = evt.detail.data.intersectionPoint;
+    const slicedColor = other.sliceColor;
     if (!slicedColor) return; // slicing is OK regardless of sliceColor
     if (slicedColor == this.currentColorToSlice) {
-      console.log('add points');
+      console.log('add points', point);
+      addScore(other, point);
     } else {
       // loose game (loose life?)
       console.log('killed');

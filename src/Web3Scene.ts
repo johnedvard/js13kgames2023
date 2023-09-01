@@ -83,9 +83,10 @@ export class Web3Scene {
 
   onSplit = (evt) => {
     if (this.sceneManager.currentScene != 'w') return;
+    const other = evt.detail.data.svg;
     this.playBtn.forEach((svg) => {
       if (this.isEventInProgress) return;
-      if (svg == evt.detail.data) {
+      if (svg == other) {
         this.isEventInProgress = true;
         setIsUseSelectedColor(false); // use the equipped color instead
         emit('play');
@@ -93,40 +94,40 @@ export class Web3Scene {
     });
     if (this.lightSaber) {
       this.lightSaber.getSvgs().forEach((svg) => {
-        if (svg == evt.detail.data) {
+        if (svg == other) {
           setSelectedDragColor(lightBlue);
         }
       });
     }
     if (this.haloSaber) {
       this.haloSaber.getSvgs().forEach((svg) => {
-        if (svg == evt.detail.data) {
+        if (svg == other) {
           setSelectedDragColor(darkPink);
         }
       });
     }
     this.loginBtn.forEach((svg) => {
       if (this.isEventInProgress) return;
-      if (svg == evt.detail.data) {
+      if (svg == other) {
         this.isEventInProgress = true;
         login();
       }
     });
     this.equipLightSaberBtn.forEach((svg) => {
-      if (svg == evt.detail.data) {
+      if (svg == other) {
         setSelectedDragColor(lightBlue);
         setEquippedDragColor(lightBlue);
       }
     });
     this.equipHaloSaberBtn.forEach((svg) => {
-      if (svg == evt.detail.data) {
+      if (svg == other) {
         setSelectedDragColor(darkPink);
         setEquippedDragColor(darkPink);
       }
     });
     this.buyLightSaberBtn.forEach((svg) => {
       if (this.isEventInProgress) return;
-      if (svg == evt.detail.data) {
+      if (svg == other) {
         this.isEventInProgress = true;
         if (isLoggedIn()) {
           buyNftSword(lightSaberData);
@@ -137,7 +138,7 @@ export class Web3Scene {
     });
     this.buyHaloSaberBtn.forEach((svg) => {
       if (this.isEventInProgress) return;
-      if (svg == evt.detail.data) {
+      if (svg == other) {
         this.isEventInProgress = true;
         if (isLoggedIn()) {
           buyNftSword(haloSaberData);

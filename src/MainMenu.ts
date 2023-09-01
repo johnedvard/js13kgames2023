@@ -1,20 +1,10 @@
-import { vec2, canvasFixedSize, timeDelta } from './littlejs';
+import { vec2, timeDelta } from './littlejs';
 
 import { MySvg } from './MySvg';
 import { handleSvgCollisions } from './handleSvgCollisions';
-import { tween, tweenRot } from './tween';
+import { tweenRot } from './tween';
 import { emit, on } from './gameEvents';
-import {
-  create3,
-  createA,
-  createB,
-  createE,
-  createM,
-  createPlayButton,
-  createS,
-  createW,
-  createWeb3Button,
-} from './bambooFont';
+import { createA, createM, createPlayButton, createS, createWeb3Button } from './bambooFont';
 import { SceneManager } from './SceneManager';
 
 export class MainMenu {
@@ -47,14 +37,14 @@ export class MainMenu {
 
   onSplit = (evt: CustomEvent) => {
     if (this.sceneManager.currentScene != 'm') return;
-    console.log(evt.detail.data);
+    const other = evt.detail.data.svg;
     this.playButton.forEach((svg) => {
-      if (svg == evt.detail.data) {
+      if (svg == other) {
         emit('play');
       }
     });
     this.web3Button.forEach((svg) => {
-      if (svg == evt.detail.data) {
+      if (svg == other) {
         emit('web3');
       }
     });
