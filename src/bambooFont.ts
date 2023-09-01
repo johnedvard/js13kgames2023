@@ -3,7 +3,7 @@ import { vec2, canvasFixedSize } from './littlejs';
 import { MySvg } from './MySvg';
 import { bambooPath } from './svgPaths';
 import { red } from './colors';
-import { tween } from './tween';
+import { tween, tweenRot } from './tween';
 
 export function createS(startOffset = vec2(0, 0)) {
   const offsetX = startOffset.x;
@@ -230,5 +230,6 @@ export function createPlayButton() {
     s.setGravityScale(0);
   });
   tween(playButton, vec2(canvasFixedSize.x / 2 - 90, canvasFixedSize.y), vec2(canvasFixedSize.x / 2 - 90, 700), 1);
+  tweenRot(playButton, -0.05, 0.05, 1, true);
   return playButton;
 }

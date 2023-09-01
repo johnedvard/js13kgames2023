@@ -2,7 +2,7 @@ import { vec2, canvasFixedSize, timeDelta } from './littlejs';
 
 import { MySvg } from './MySvg';
 import { handleSvgCollisions } from './handleSvgCollisions';
-import { tween } from './tween';
+import { tween, tweenRot } from './tween';
 import { emit, on } from './gameEvents';
 import { create3, createA, createB, createE, createM, createPlayButton, createS, createW } from './bambooFont';
 import { SceneManager } from './SceneManager';
@@ -32,6 +32,7 @@ export class MainMenu {
     this.letters.push(...mSvgs);
 
     this.letters.forEach((s) => s.setGravityScale(0));
+    tweenRot(this.letters, -0.1, 0.1, 2, true);
   }
 
   onSplit = (evt: CustomEvent) => {
@@ -97,5 +98,6 @@ export class MainMenu {
       vec2(canvasFixedSize.x / 2 - 100, canvasFixedSize.y - 100),
       1
     );
+    tweenRot(this.web3Button, -0.1, 0.1, 1.3, true);
   }
 }

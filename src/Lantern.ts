@@ -16,7 +16,14 @@ export class Lantern {
   velocity: vec2 = vec2(0, 0);
   gravitationScale = -1.4;
   sliceColor: ColorToSliceType;
-  constructor(startPos = vec2(0, canvasFixedSize.y), sliceColor: ColorToSliceType, velocity = vec2(1, 0)) {
+  shouldRotate = false;
+  constructor(
+    startPos = vec2(0, canvasFixedSize.y),
+    sliceColor: ColorToSliceType,
+    velocity = vec2(1, 0),
+    shouldRotate = false
+  ) {
+    this.shouldRotate = shouldRotate;
     this.sliceColor = sliceColor;
     this.svgBody = new MySvg(
       lanternBodyPath,
@@ -66,15 +73,16 @@ export class Lantern {
       this.svgBody.velocity.x = this.velocity.x;
       this.svgTipTop.velocity.x = this.velocity.x;
       this.svgTipBot.velocity.x = this.velocity.x;
-
       return;
     }
-    // const centerPos = this.getCenterPos();
+    const centerPos = this.getCenterPos();
     this.velocity.y -= gravity * this.gravitationScale * getTimeSpeedScale();
     this.pos.x += this.velocity.x;
     this.pos.y += this.velocity.y;
     this.getSvgs().forEach((svg) => {
-      //   svg.rotateSvg(-1, vec2(centerPos.x, centerPos.y));
+      if (this.shouldRotate) {
+        svg.rotateSvg(-1, vec2(centerPos.x, centerPos.y));
+      }
       svg.update(vec2(-this.velocity.x, -this.velocity.y));
     });
     handleSvgCollisions(this.svgBody);

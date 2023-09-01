@@ -27,6 +27,7 @@ export class MySvg extends EngineObject {
   public children: MySvg[] = [];
   public sliceColor: ColorToSliceType | null = null;
 
+  private centerPos: vec2 = vec2(0, 0);
   private gravitationScale: number = 1;
   // TODO constructor override if we want to use cmd instead of path?
   constructor(
@@ -47,6 +48,7 @@ export class MySvg extends EngineObject {
     this.fill = fill;
     this.velocity = velocity;
     this.gravitationScale = gravitationScale;
+    this.centerPos = pos.copy();
 
     if (this.path) {
       this.cmds = parseSvg(path);
@@ -60,6 +62,19 @@ export class MySvg extends EngineObject {
     this.current2DPath.path = this.getCmdsAsPathString();
   }
 
+  debugCenterPoint(ctx) {
+    ctx.save();
+    ctx.fillStyle = 'green';
+
+    const x = this.centerPos.x + this.pos.x;
+    const y = this.centerPos.y + this.pos.y;
+    ctx.moveTo(x, y);
+    ctx.arc(x, y, 5, 0, 2 * Math.PI); // startpoint
+    ctx.fill();
+
+    ctx.restore();
+  }
+
   rotateSvg(angle: number, centerPoint = vec2(0, 0)) {
     rotateCoordinates(this.cmds, angle, centerPoint);
     this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
@@ -67,6 +82,8 @@ export class MySvg extends EngineObject {
   }
   translateSvg(distance: vec2) {
     const transCoord = distance.copy().add(this.pos);
+    this.centerPos.x = transCoord.x;
+    this.centerPos.y = transCoord.y;
     translateCoordinates(this.cmds, transCoord);
     this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
     this.current2DPath.path = this.getCmdsAsPathString();
@@ -76,6 +93,13 @@ export class MySvg extends EngineObject {
     translateCoordinates(this.cmds, diff);
     this.pos.x = pos.x;
     this.pos.y = pos.y;
+    // this.centerPos.x = this.pos.x;
+    // this.centerPos.y = this.pos.y;
+  }
+  getCenterPos() {
+    const centerX = this.centerPos.x + this.pos.x;
+    const centerY = this.centerPos.y + this.pos.y;
+    return vec2(centerX, centerY);
   }
 
   update(addedVelocity = vec2(0, 0)) {
@@ -99,6 +123,7 @@ export class MySvg extends EngineObject {
       return;
     }
 
+    // this.debugCenterPoint(ctx);
     ctx.save();
     ctx.lineWidth = 5;
     ctx.beginPath(); // Start a new path
