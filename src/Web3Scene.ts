@@ -41,42 +41,6 @@ export class Web3Scene {
 
   equipButton: MySvg[] = [];
   constructor(private sceneManager: SceneManager) {
-    this.playBtn = createPlayButton();
-    this.buyLightSaberBtn = this.createBuyButton();
-    this.buyHaloSaberBtn = this.createBuyButton();
-    this.loginBtn = this.createLoginButton();
-    this.equipHaloSaberBtn = this.createEquipButton();
-    this.equipLightSaberBtn = this.createEquipButton();
-    this.buyLightSaberBtn.forEach((s) => {
-      s.setScale(0.25);
-      s.setGravityScale(0);
-      s.translateSvg(vec2(375, 500));
-    });
-    this.buyHaloSaberBtn.forEach((s) => {
-      s.setScale(0.25);
-      s.setGravityScale(0);
-      s.translateSvg(vec2(150, 500));
-    });
-    this.equipHaloSaberBtn.forEach((s) => {
-      s.setGravityScale(0);
-      s.setScale(0.25);
-      s.translateSvg(vec2(150, 500));
-    });
-    this.equipLightSaberBtn.forEach((s) => {
-      s.setGravityScale(0);
-      s.setScale(0.25);
-      s.translateSvg(vec2(375, 500));
-    });
-    this.loginBtn.forEach((s) => {
-      s.setGravityScale(0);
-      s.setScale(0.25);
-    });
-    tween(
-      this.loginBtn,
-      vec2(canvasFixedSize.x / 2 - 70, canvasFixedSize.y),
-      vec2(canvasFixedSize.x / 2 - 70, canvasFixedSize.y - 100),
-      1
-    );
     on('split', this.onSplit);
   }
 
@@ -262,6 +226,51 @@ export class Web3Scene {
     ctx.restore();
   }
   start() {
+    console.log('start web 3');
+    this.playBtn.length = 0;
+    this.buyLightSaberBtn.length = 0;
+    this.buyHaloSaberBtn.length = 0;
+    this.loginBtn.length = 0;
+    this.equipHaloSaberBtn.length = 0;
+    this.equipLightSaberBtn.length = 0;
+
+    this.playBtn = createPlayButton();
+    this.buyLightSaberBtn = this.createBuyButton();
+    this.buyHaloSaberBtn = this.createBuyButton();
+    this.loginBtn = this.createLoginButton();
+    this.equipHaloSaberBtn = this.createEquipButton();
+    this.equipLightSaberBtn = this.createEquipButton();
+    this.buyLightSaberBtn.forEach((s) => {
+      s.setScale(0.25);
+      s.setGravityScale(0);
+      s.translateSvg(vec2(375, 500));
+    });
+    this.buyHaloSaberBtn.forEach((s) => {
+      s.setScale(0.25);
+      s.setGravityScale(0);
+      s.translateSvg(vec2(150, 500));
+    });
+    this.equipHaloSaberBtn.forEach((s) => {
+      s.setGravityScale(0);
+      s.setScale(0.25);
+      s.translateSvg(vec2(150, 500));
+    });
+    this.equipLightSaberBtn.forEach((s) => {
+      s.setGravityScale(0);
+      s.setScale(0.25);
+      s.translateSvg(vec2(375, 500));
+    });
+    this.loginBtn.forEach((s) => {
+      s.setGravityScale(0);
+      s.setScale(0.25);
+    });
+    tween(
+      this.loginBtn,
+      vec2(canvasFixedSize.x / 2 - 70, canvasFixedSize.y),
+      vec2(canvasFixedSize.x / 2 - 70, canvasFixedSize.y - 100),
+      1
+    );
+    this.isEventInProgress = false;
     initNear().then(async () => {
       if (isLoggedIn()) {
         const tokensOwned = await getNftTokensForOwner();

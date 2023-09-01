@@ -233,3 +233,38 @@ export function createPlayButton() {
   tweenRot(playButton, -0.05, 0.05, 1, true);
   return playButton;
 }
+
+export function createWeb3Button() {
+  const w = createW();
+  w.forEach((l) => {
+    l.setScale(0.25);
+    l.translateSvg(vec2(30, 0));
+  });
+  const e = createE();
+  const b = createB();
+  const w3 = create3();
+
+  e.forEach((e) => {
+    e.setScale(0.25);
+    e.translateSvg(vec2(70, 0));
+  });
+  b.forEach((svg) => {
+    svg.setScale(0.25);
+    svg.translateSvg(vec2(100, 0));
+  });
+  w3.forEach((svg) => {
+    svg.setScale(0.25);
+    svg.translateSvg(vec2(150, 0));
+  });
+
+  const web3Button = [...w, ...e, ...b, ...w3];
+  web3Button.forEach((s) => s.setGravityScale(0));
+  tween(
+    web3Button,
+    vec2(canvasFixedSize.x / 2 - 100, canvasFixedSize.y),
+    vec2(canvasFixedSize.x / 2 - 100, canvasFixedSize.y - 100),
+    1
+  );
+  tweenRot(web3Button, -0.1, 0.1, 1.3, true);
+  return web3Button;
+}

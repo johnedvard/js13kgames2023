@@ -40,9 +40,10 @@ export class SceneManager {
       switch (sceneType) {
         case 'l':
           return this.level.start();
-
         case 'w':
           return this.web3Scene.start();
+        case 'g':
+          return this.gameOverScene.start();
       }
     };
     startSceneTransition(1.5, onMiddle, onEnded);
@@ -66,7 +67,7 @@ export class SceneManager {
         overlayContext.fillRect(0, 0, canvasFixedSize.x, canvasFixedSize.y);
         setTimeSpeedScale(Math.min(1, ellapsedTime - 0.8));
       }
-      if (ellapsedTime >= 1 && this.currentScene != 'g') {
+      if (ellapsedTime >= 1 && !this.isChangingScenes) {
         this.changeScene('g');
       }
       if (ellapsedTime >= maxTime) {

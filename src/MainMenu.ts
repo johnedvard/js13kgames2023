@@ -4,7 +4,17 @@ import { MySvg } from './MySvg';
 import { handleSvgCollisions } from './handleSvgCollisions';
 import { tween, tweenRot } from './tween';
 import { emit, on } from './gameEvents';
-import { create3, createA, createB, createE, createM, createPlayButton, createS, createW } from './bambooFont';
+import {
+  create3,
+  createA,
+  createB,
+  createE,
+  createM,
+  createPlayButton,
+  createS,
+  createW,
+  createWeb3Button,
+} from './bambooFont';
 import { SceneManager } from './SceneManager';
 
 export class MainMenu {
@@ -16,7 +26,7 @@ export class MainMenu {
   constructor(private sceneManager: SceneManager) {
     this.createTitle();
     this.playButton = createPlayButton();
-    this.createWeb3();
+    this.web3Button = createWeb3Button();
 
     on('split', this.onSplit);
   }
@@ -65,39 +75,5 @@ export class MainMenu {
     this.playButton.forEach((s) => s.render(ctx));
     this.web3Button.forEach((s) => s.render(ctx));
     ctx.restore();
-  }
-
-  createWeb3() {
-    const w = createW();
-    w.forEach((l) => {
-      l.setScale(0.25);
-      l.translateSvg(vec2(30, 0));
-    });
-    const e = createE();
-    const b = createB();
-    const w3 = create3();
-
-    e.forEach((e) => {
-      e.setScale(0.25);
-      e.translateSvg(vec2(70, 0));
-    });
-    b.forEach((svg) => {
-      svg.setScale(0.25);
-      svg.translateSvg(vec2(100, 0));
-    });
-    w3.forEach((svg) => {
-      svg.setScale(0.25);
-      svg.translateSvg(vec2(150, 0));
-    });
-
-    this.web3Button = [...w, ...e, ...b, ...w3];
-    this.web3Button.forEach((s) => s.setGravityScale(0));
-    tween(
-      this.web3Button,
-      vec2(canvasFixedSize.x / 2 - 100, canvasFixedSize.y),
-      vec2(canvasFixedSize.x / 2 - 100, canvasFixedSize.y - 100),
-      1
-    );
-    tweenRot(this.web3Button, -0.1, 0.1, 1.3, true);
   }
 }

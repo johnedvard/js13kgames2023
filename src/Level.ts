@@ -24,7 +24,6 @@ export class Level {
   currentColorToSlice: ColorToSliceType = 'r';
   nextColorToSlice: ColorToSliceType = 'b';
   maxColorSize = 6;
-  ellapsedTime = 0;
   currentWave = 0;
   sliceColorMaxLifeTime = 4; // how long the current slice color is active
   currentSliceColorEllapseTime = 0;
@@ -33,10 +32,6 @@ export class Level {
 
   constructor(private sceneManager: SceneManager) {
     this.music = new Music(song);
-    // start first wave in constructor
-    for (let i = 0; i < 2; i++) {
-      this.lanterns.push(new Lantern(vec2(i * 146, canvasFixedSize.y - 100), 'r'));
-    }
     on('split', this.onSplit);
     on('wave', this.onNewWave);
   }
@@ -60,7 +55,6 @@ export class Level {
       handleSvgCollisions(s);
     });
 
-    this.ellapsedTime += timeDelta;
     if (this.music.isPlaying()) {
       this.ellapsedPlayTime += timeDelta;
     }
@@ -145,6 +139,23 @@ export class Level {
     ctx.restore();
   }
   start() {
+    console.log('start level');
+    // Always start the first and second color with red and blue. Acts like a tutorial
+    this.currentColorToSlice = 'r';
+    this.nextColorToSlice = 'b';
+    // reset
+    this.lanterns.length = 0;
+    this.bamboos.length = 0;
+    this.arrows.length = 0;
+    // start first wave
+    for (let i = 0; i < 2; i++) {
+      this.lanterns.push(new Lantern(vec2(i * 146, canvasFixedSize.y - 100), 'r'));
+    }
+    this.ellapsedPlayTime = 0;
+    this.currentWave = 0;
+    this.currentSliceColorEllapseTime = 0;
+    this.currentWaveEllapseTime = 0;
+    this.music.stop();
     this.music.play();
   }
 
