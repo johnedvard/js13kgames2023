@@ -67,6 +67,7 @@ export function buyNftSword(sword: SwordDataType) {
   nearConnection.nftBuy(sword);
 }
 export function login() {
+  if (!nearConnection) return;
   if (!nearConnection.isSignedIn()) return nearConnection.login();
 }
 
