@@ -1,9 +1,15 @@
-import { mouseIsDown, mousePosScreen } from './littlejs';
+import { darkPink, lightBlue } from './colors';
+import { mouseIsDown, mousePosScreen, Sound } from './littlejs';
+import { lightSaberDrawSfx, haloSaberDrawSfx } from './music';
 export const mousePoints = [];
 export const maxDraws = 6;
 let selectedDrawColor = 'white';
 let equippedDrawColor = 'white';
 let isUseSelectedColor = false; // swap between selected and equipped
+let lightSaberDrawSound = new Sound(lightSaberDrawSfx);
+let haloSaberDrawSound = new Sound(haloSaberDrawSfx);
+let selectedDrawSound: Sound;
+let equippedDrawSound: Sound;
 
 function removeMouseDraggings() {
   for (let i = mousePoints.length - 1; i >= 0; i--) {
@@ -18,14 +24,24 @@ function getColorToDraw() {
   return equippedDrawColor;
 }
 
+function getDrawSound() {
+  if (isUseSelectedColor) return selectedDrawSound;
+  return equippedDrawSound;
+}
+
 export function drawTouchLine(ctx) {
   if (!mousePoints.length) return;
+
   // cleanup leftover mouse points
   if (!mouseIsDown(0)) {
     mousePoints[0].draws--;
   }
 
   ctx.strokeStyle = getColorToDraw();
+  const drawSound = getDrawSound();
+  if (drawSound) {
+    drawSound.play();
+  }
   for (let i = 0; i < mousePoints.length - 1; i++) {
     const prev = mousePoints[i];
     const next = mousePoints[i + 1];
@@ -57,7 +73,19 @@ export function setIsUseSelectedColor(value: boolean) {
 }
 export function setSelectedDragColor(color: string) {
   selectedDrawColor = color;
+  selectedDrawSound = getDrawSoundFromColor(color);
 }
 export function setEquippedDragColor(color: string) {
   equippedDrawColor = color;
+  equippedDrawSound = getDrawSoundFromColor(color);
+}
+function getDrawSoundFromColor(color: string) {
+  switch (color) {
+    case lightBlue:
+      return lightSaberDrawSound;
+    case darkPink:
+      return haloSaberDrawSound;
+    default:
+      return null;
+  }
 }
