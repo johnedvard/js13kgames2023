@@ -1,4 +1,4 @@
-import { setTimeSpeedScale, timeDelta, overlayContext, canvasFixedSize } from './littlejs';
+import { setTimeSpeedScale, timeDelta, overlayContext, canvasFixedSize, Sound } from './littlejs';
 
 import { GameOverScene } from './GameOverScene';
 import { Level } from './Level';
@@ -6,6 +6,7 @@ import { MainMenu } from './MainMenu';
 import { Web3Scene } from './Web3Scene';
 import { off, on } from './gameEvents';
 import { startSceneTransition } from './startSceneTransition';
+import { killedSfx } from './music';
 
 type SceneType = 'm' | 'l' | 'w' | 'g' | '';
 export class SceneManager {
@@ -16,6 +17,7 @@ export class SceneManager {
   gameOverScene: GameOverScene;
   isChangingScenes = false;
   isOnKillProcedure = false;
+  killSound: Sound;
 
   constructor() {
     // TODO (johnedvard) create level or main menu depending on current scene instead
@@ -23,6 +25,7 @@ export class SceneManager {
     this.level = new Level(this);
     this.web3Scene = new Web3Scene(this);
     this.gameOverScene = new GameOverScene(this);
+    this.killSound = new Sound(killedSfx);
     on('play', this.onPlay);
     on('web3', this.onWeb3);
     on('killed', this.onKilled);
@@ -51,6 +54,7 @@ export class SceneManager {
 
   startOnKilledProcedure() {
     this.isOnKillProcedure = true;
+    this.killSound.play();
 
     const maxTime = 1.5;
     let ellapsedTime = 0;

@@ -1,10 +1,12 @@
-import { vec2, timeDelta } from './littlejs';
+import { vec2, timeDelta, Sound } from './littlejs';
 
 import { MySvg } from './MySvg';
 import { pink, yellow } from './colors';
 import { arrowFeatherPath, arrowFlamePath, arrowPath } from './svgPaths';
 import { handleSvgCollisions } from './handleSvgCollisions';
 import { Cmd } from './types/Cmd';
+import { off, on } from './gameEvents';
+import { miniSliceSfx, sliceSnapSfx } from './music';
 
 export class Arrow {
   arrowFlameSvg = new MySvg(arrowFlamePath, null, null, yellow, vec2(0, 180));
@@ -13,6 +15,8 @@ export class Arrow {
   maxTipX: number;
   minTipX: number;
   ellapsedTime: number = 0;
+  snapSound: Sound;
+  miniSliceSound: Sound;
   constructor(startPos = vec2(0, 0), vel = vec2(0, -1)) {
     this.getSvgs().forEach((s) => {
       s.setPos(vec2(s.pos.x + startPos.x, s.pos.y + startPos.y));
@@ -20,10 +24,27 @@ export class Arrow {
       s.setGravityScale(0);
       s.velocity = vel;
     });
-
+    this.snapSound = new Sound(sliceSnapSfx);
+    this.miniSliceSound = new Sound(miniSliceSfx);
     this.minTipX = this.arrowFlameSvg.cmds[2].x - 2;
     this.maxTipX = this.arrowFlameSvg.cmds[2].x + 2;
+    on('split', this.onSplitArrow);
+    on('split', this.onSplitFeather);
   }
+  onSplitArrow = (evt) => {
+    const other = evt.detail.data.svg;
+    if (other == this.arrowSvg) {
+      this.snapSound.play();
+      off('split', this.onSplitArrow);
+    }
+  };
+  onSplitFeather = (evt) => {
+    const other = evt.detail.data.svg;
+    if (other == this.arrowFeatherSvg) {
+      this.miniSliceSound.play();
+      off('split', this.onSplitFeather);
+    }
+  };
   render(ctx) {
     // this.debugPoint(ctx, this.arrowFlameSvg.cmds[2]);
     this.getSvgs().forEach((s) => s.render(ctx));
@@ -51,7 +72,7 @@ export class Arrow {
       c1.setScale(0.95);
     }
     this.updateFlameAnim();
-    handleSvgCollisions(this.arrowFeatherSvg, 1);
+    handleSvgCollisions(this.arrowFeatherSvg, 3);
     handleSvgCollisions(this.arrowSvg, 0.1);
   }
 

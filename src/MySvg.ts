@@ -1,4 +1,4 @@
-import { vec2, EngineObject, gravity, getTimeSpeedScale } from './littlejs';
+import { vec2, EngineObject, gravity, getTimeSpeedScale, Sound } from './littlejs';
 
 import { parseSvg } from './parseSvg';
 
@@ -14,6 +14,7 @@ import { rotateCoordinates } from './rotateCoordinates';
 import { emit } from './gameEvents';
 import { scaleCoordinates } from './scaleCoodinates';
 import { ColorToSliceType } from './ColorToSliceType';
+import { getSliceSfx } from './music';
 
 export class MySvg extends EngineObject {
   public path: string;
@@ -27,6 +28,7 @@ export class MySvg extends EngineObject {
   public children: MySvg[] = [];
   public sliceColor: ColorToSliceType | null = null;
 
+  private sliceSound: Sound;
   private centerPos: vec2 = vec2(0, 0);
   private gravitationScale: number = 1;
   // TODO constructor override if we want to use cmd instead of path?
@@ -49,7 +51,8 @@ export class MySvg extends EngineObject {
     this.velocity = velocity;
     this.gravitationScale = gravitationScale;
     this.centerPos = pos.copy();
-
+    // const randomSliceSfx = sliceSfxs[Math.floor(Math.random() * sliceSfxs.length)];
+    this.sliceSound = new Sound(getSliceSfx(), 0);
     if (this.path) {
       this.cmds = parseSvg(path);
       makeSvgPathCommandsAbsolute(this.cmds); // Note: mutates the commands in place!
@@ -227,6 +230,7 @@ export class MySvg extends EngineObject {
         newSvgs.forEach((svg) => {
           this.children.push(svg);
         });
+        this.sliceSound.play();
         emit('split', { svg: this, intersectionPoint: this.intersectionPoints[1].intersectionPoint });
       }
     }

@@ -1,4 +1,4 @@
-import { vec2, timeDelta } from './littlejs';
+import { vec2, timeDelta, Music } from './littlejs';
 
 import { MySvg } from './MySvg';
 import { handleSvgCollisions } from './handleSvgCollisions';
@@ -6,17 +6,20 @@ import { tweenRot } from './tween';
 import { emit, on } from './gameEvents';
 import { createA, createM, createPlayButton, createS, createWeb3Button } from './bambooFont';
 import { SceneManager } from './SceneManager';
+import { menuSong } from './music';
 
 export class MainMenu {
   letters: MySvg[] = [];
   playButton: MySvg[] = [];
   web3Button: MySvg[] = [];
   ellapsedTime = 0;
-
+  music: Music;
+  isChangingScene = false;
   constructor(private sceneManager: SceneManager) {
     this.createTitle();
     this.playButton = createPlayButton();
     this.web3Button = createWeb3Button();
+    this.music = new Music(menuSong);
 
     on('split', this.onSplit);
   }
@@ -40,17 +43,22 @@ export class MainMenu {
     const other = evt.detail.data.svg;
     this.playButton.forEach((svg) => {
       if (svg == other) {
+        this.isChangingScene = true;
+        this.music.stop();
         emit('play');
       }
     });
     this.web3Button.forEach((svg) => {
       if (svg == other) {
+        this.isChangingScene = true;
+        this.music.stop();
         emit('web3');
       }
     });
   };
 
   update() {
+    if (!this.music.isPlaying() && !this.isChangingScene) this.music.play();
     this.ellapsedTime += timeDelta;
     this.letters.forEach((s) => handleSvgCollisions(s));
     this.playButton.forEach((s) => handleSvgCollisions(s, 1));
