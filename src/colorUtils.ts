@@ -1,5 +1,5 @@
 import { ColorToSliceType } from './ColorToSliceType';
-import { blue, red } from './colors';
+import { amber, blue, red, teal } from './colors';
 
 export function getColorFromSliceColor(sliceColor: ColorToSliceType) {
   switch (sliceColor) {
@@ -13,8 +13,8 @@ export function getColorFromSliceColor(sliceColor: ColorToSliceType) {
 export function getSecondaryColorFromSliceColor(sliceColor: ColorToSliceType) {
   switch (sliceColor) {
     case 'r':
-      return 'orange';
+      return amber;
     case 'b':
-      return 'teal';
+      return teal;
   }
 }

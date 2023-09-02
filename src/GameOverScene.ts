@@ -7,6 +7,7 @@ import { red } from './colors';
 import { handleSvgCollisions } from './handleSvgCollisions';
 import { emit, on } from './gameEvents';
 import { createPlayButton, createWeb3Button } from './bambooFont';
+import { getStoredHighscore } from './scoreUtils';
 
 export class GameOverScene {
   cross: MySvg[] = [];
@@ -55,7 +56,15 @@ export class GameOverScene {
     this.cross.forEach((svg) => svg.render(ctx));
     this.playButton.forEach((svg) => svg.render(ctx));
     this.web3Button.forEach((svg) => svg.render(ctx));
+    this.renderHighScore(ctx);
     ctx.restore();
+  }
+  renderHighScore(ctx) {
+    const score = getStoredHighscore();
+    ctx.font = `${32}px serif`;
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Highscore: ${score}`, canvasFixedSize.x / 2, 200);
   }
   start() {
     console.log('start game over');
@@ -74,7 +83,7 @@ export class GameOverScene {
     bamboo1.translateSvg(vec2(80, -15));
 
     this.cross.push(bamboo1, bamboo2);
-    this.cross.forEach((svg) => svg.translateSvg(vec2(canvasFixedSize.x / 2 - 30, canvasFixedSize.y / 2)));
+    this.cross.forEach((svg) => svg.translateSvg(vec2(canvasFixedSize.x / 2 - 40, 50)));
     this.playButton = createPlayButton();
     this.web3Button = createWeb3Button();
   }

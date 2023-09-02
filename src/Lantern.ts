@@ -34,6 +34,7 @@ export class Lantern {
       vec2(0, 0),
       vec2(39, 77)
     );
+    this.svgBody.setGameObjectType('l');
     this.svgTipTop = new MySvg(
       lanternTipPath,
       null,
@@ -105,9 +106,9 @@ export class Lantern {
     );
 
     // Add three color stops
-    this.gradient.addColorStop(0, getSecondaryColorFromSliceColor(this.sliceColor));
-    this.gradient.addColorStop(0.5, getColorFromSliceColor(this.sliceColor));
-    this.gradient.addColorStop(1, getSecondaryColorFromSliceColor(this.sliceColor));
+    this.gradient.addColorStop(0, getColorFromSliceColor(this.sliceColor));
+    this.gradient.addColorStop(0.5, getSecondaryColorFromSliceColor(this.sliceColor));
+    this.gradient.addColorStop(1, getColorFromSliceColor(this.sliceColor));
     this.svgBody.fill = this.gradient;
     ctx.restore();
     // this.debugCenterPoint(ctx);

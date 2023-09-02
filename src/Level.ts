@@ -12,7 +12,7 @@ import { getColorFromSliceColor } from './colorUtils';
 import { bambooPath } from './svgPaths';
 import { handleSvgCollisions } from './handleSvgCollisions';
 import { SceneManager } from './SceneManager';
-import { addScore } from './addScore';
+import { addScore, setCurrentScore } from './scoreUtils';
 
 export class Level {
   arrows: Arrow[] = [];
@@ -41,7 +41,10 @@ export class Level {
     const other = evt.detail.data.svg;
     const point = evt.detail.data.intersectionPoint;
     const slicedColor = other.sliceColor;
-    if (!slicedColor) return; // slicing is OK regardless of sliceColor
+    if (!slicedColor) {
+      addScore(other, point);
+      return; // slicing is OK regardless of sliceColor
+    }
     if (slicedColor == this.currentColorToSlice) {
       console.log('add points', point);
       addScore(other, point);
@@ -145,6 +148,7 @@ export class Level {
   start() {
     console.log('start level');
     // Always start the first and second color with red and blue. Acts like a tutorial
+    setCurrentScore(0);
     this.currentColorToSlice = 'r';
     this.nextColorToSlice = 'b';
     // reset
@@ -194,10 +198,67 @@ export class Level {
         this.bamboos.push(bamboo);
       }
     }
-    if (this.currentWave == 5) {
+    // Add arrows for every 5 wave
+    if (this.currentWave % 5 == 0) {
+      let speed = Math.max(-4, (this.currentWave / 5) * -1);
       for (let i = 0; i < 3; i++) {
-        this.arrows.push(new Arrow(vec2(i * 10 + Math.random() * 900, -300 + i * (Math.random() * 20))));
+        this.arrows.push(
+          new Arrow(vec2(i * 10 + Math.random() * 900, -300 + i * (Math.random() * 20)), vec2(0, speed))
+        );
+      }
+    }
+    // skipe wave 6 (player needs time to destroy arrows)
+    if (this.currentWave == 7 || this.currentWave == 8) {
+      this.spawnBamboos();
+    }
+    if (this.currentWave >= 10) {
+      if (this.currentWave % 2 == 0) {
+        const sliceColor = this.getRandomSliceColor();
+        let x = 50 + Math.floor(100 + Math.random() * (canvasFixedSize.x - 100));
+        const bamboo = new MySvg(bambooPath, null, sliceColor, getColorFromSliceColor(sliceColor));
+        bamboo.setScale(2);
+        bamboo.translateSvg(vec2(x, -200));
+        this.bamboos.push(bamboo);
+      }
+      if (this.currentWave % 4 == 0) {
+        this.spawnLanterns();
+      }
+      if (this.currentWave % 3 == 0) {
+        this.spawnBamboos();
       }
     }
   };
+
+  spawnBamboos() {
+    for (let i = 0; i < 5; i++) {
+      let sliceColor = this.getRandomSliceColor();
+      setTimeout(
+        (sliceColor) => {
+          let x = 50 + Math.floor(100 + Math.random() * (canvasFixedSize.x - 100));
+          const bamboo = new MySvg(bambooPath, null, sliceColor, getColorFromSliceColor(sliceColor));
+          bamboo.setScale(1.25);
+          bamboo.translateSvg(vec2(x, -200));
+          this.bamboos.push(bamboo);
+        },
+        i * 100,
+        sliceColor
+      );
+    }
+  }
+
+  spawnLanterns() {
+    for (let i = 0; i < 4; i++) {
+      const lantern = new Lantern(
+        vec2(50 + Math.random() * (canvasFixedSize.x - 50), canvasFixedSize.y),
+        this.getRandomSliceColor()
+      );
+      if (lantern.pos.x >= canvasFixedSize.x / 2 - 100) {
+        lantern.velocity = vec2(-0.5, 0);
+      } else {
+        lantern.velocity = vec2(0.5, 0);
+      }
+      lantern.shouldRotate = true;
+      this.lanterns.push(lantern);
+    }
+  }
 }

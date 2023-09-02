@@ -18,6 +18,8 @@ export class Arrow {
   snapSound: Sound;
   miniSliceSound: Sound;
   constructor(startPos = vec2(0, 0), vel = vec2(0, -1)) {
+    this.arrowFeatherSvg.setGameObjectType('f');
+    this.arrowSvg.setGameObjectType('a');
     this.getSvgs().forEach((s) => {
       s.setPos(vec2(s.pos.x + startPos.x, s.pos.y + startPos.y));
       s.setScale(0.5);

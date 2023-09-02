@@ -7,6 +7,7 @@ import { Web3Scene } from './Web3Scene';
 import { off, on } from './gameEvents';
 import { startSceneTransition } from './startSceneTransition';
 import { killedSfx } from './music';
+import { Hud } from './Hud';
 
 type SceneType = 'm' | 'l' | 'w' | 'g' | '';
 export class SceneManager {
@@ -15,6 +16,7 @@ export class SceneManager {
   level: Level;
   web3Scene: Web3Scene;
   gameOverScene: GameOverScene;
+  hud: Hud;
   isChangingScenes = false;
   isOnKillProcedure = false;
   killSound: Sound;
@@ -25,6 +27,7 @@ export class SceneManager {
     this.level = new Level(this);
     this.web3Scene = new Web3Scene(this);
     this.gameOverScene = new GameOverScene(this);
+    this.hud = new Hud();
     this.killSound = new Sound(killedSfx);
     on('play', this.onPlay);
     on('web3', this.onWeb3);
@@ -98,6 +101,9 @@ export class SceneManager {
   };
 
   update() {
+    if (this.currentScene != 'm' && this.currentScene != 'w') {
+      this.hud.update();
+    }
     switch (this.currentScene) {
       case 'm':
         return this.mainMenu.update();
@@ -110,6 +116,9 @@ export class SceneManager {
     }
   }
   render(ctx) {
+    if (this.currentScene != 'm' && this.currentScene != 'w') {
+      this.hud.render();
+    }
     switch (this.currentScene) {
       case 'm':
         return this.mainMenu.render(ctx);

@@ -15,6 +15,7 @@ import { emit } from './gameEvents';
 import { scaleCoordinates } from './scaleCoodinates';
 import { ColorToSliceType } from './ColorToSliceType';
 import { getSliceSfx } from './music';
+import { GameObjectType } from './GameObjectType';
 
 export class MySvg extends EngineObject {
   public path: string;
@@ -27,6 +28,7 @@ export class MySvg extends EngineObject {
   public intersectionPoints: IntersectionPoint[] = [];
   public children: MySvg[] = [];
   public sliceColor: ColorToSliceType | null = null;
+  public gameObjectType: GameObjectType = '';
 
   private sliceSound: Sound;
   private centerPos: vec2 = vec2(0, 0);
@@ -63,6 +65,10 @@ export class MySvg extends EngineObject {
     assignIdsToCmds(this.cmds);
     this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
     this.current2DPath.path = this.getCmdsAsPathString();
+  }
+
+  setGameObjectType(gameObjectType: GameObjectType) {
+    this.gameObjectType = gameObjectType;
   }
 
   debugCenterPoint(ctx) {
