@@ -1,4 +1,4 @@
-import { vec2, EngineObject, gravity, getTimeSpeedScale, Sound } from './littlejs';
+import { vec2, EngineObject, gravity, getTimeSpeedScale, Sound, timeDelta } from './littlejs';
 
 import { parseSvg } from './parseSvg';
 
@@ -29,6 +29,7 @@ export class MySvg extends EngineObject {
   public children: MySvg[] = [];
   public sliceColor: ColorToSliceType | null = null;
   public gameObjectType: GameObjectType = '';
+  public killedTime = 0; //
 
   private sliceSound: Sound;
   private centerPos: vec2 = vec2(0, 0);
@@ -112,7 +113,10 @@ export class MySvg extends EngineObject {
   }
 
   update(addedVelocity = vec2(0, 0)) {
-    if (this.isCut()) return;
+    if (this.isCut()) {
+      this.killedTime += timeDelta;
+      return;
+    }
     const prevPos = vec2(this.pos.x, this.pos.y);
     this.velocity.y += gravity * this.gravitationScale * getTimeSpeedScale();
     this.pos.x += this.velocity.x;

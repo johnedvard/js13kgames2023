@@ -1,4 +1,4 @@
-import { vec2, mainContext, canvasFixedSize, gravity, getTimeSpeedScale } from './littlejs';
+import { vec2, mainContext, canvasFixedSize, gravity, getTimeSpeedScale, timeDelta } from './littlejs';
 
 import { MySvg } from './MySvg';
 import { lanternBodyPath, lanternTipPath } from './svgPaths';
@@ -17,6 +17,7 @@ export class Lantern {
   gravitationScale = -1.4;
   sliceColor: ColorToSliceType;
   shouldRotate = false;
+  killedTime = 0;
   constructor(
     startPos = vec2(0, canvasFixedSize.y),
     sliceColor: ColorToSliceType,
@@ -67,8 +68,13 @@ export class Lantern {
     return [this.svgBody, this.svgTipTop, this.svgTipBot];
   }
 
+  isCut() {
+    return this.svgBody.isCut();
+  }
+
   update() {
     if (this.svgBody.isCut()) {
+      this.killedTime += timeDelta;
       this.svgTipTop.setGravityScale(27);
       this.svgTipBot.setGravityScale(22);
       this.svgTipBot.rotateSvg(-0.1, this.svgTipBot.getCenterPos());

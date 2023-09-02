@@ -46,12 +46,9 @@ export class Level {
       return; // slicing is OK regardless of sliceColor
     }
     if (slicedColor == this.currentColorToSlice) {
-      console.log('add points', point);
       addScore(other, point);
     } else {
-      // loose game (loose life?)
-      console.log('killed');
-      emit('killed', {});
+      emit('killed', { msg: 'Sam, you cut the wrong color' });
     }
   };
   update() {
@@ -180,6 +177,7 @@ export class Level {
   }
 
   onNewWave = (_evt) => {
+    this.removeUnusedObjects();
     if (this.sceneManager.currentScene != 'l') return;
     if (this.currentWave == 1) {
       for (let i = 0; i < 2; i++) {
@@ -259,6 +257,30 @@ export class Level {
       }
       lantern.shouldRotate = true;
       this.lanterns.push(lantern);
+    }
+  }
+
+  removeUnusedObjects() {
+    for (let i = this.bamboos.length - 1; i >= 0; i--) {
+      const svg = this.bamboos[i];
+      if (Math.abs(svg.pos.y) >= canvasFixedSize.y + 1000 || (svg.isCut() && svg.killedTime >= 5)) {
+        this.bamboos.splice(i, 1);
+      }
+    }
+    for (let i = this.lanterns.length - 1; i >= 0; i--) {
+      const lantern = this.lanterns[i];
+      if (
+        Math.abs(lantern.getCenterPos().y) >= canvasFixedSize.y + 1000 ||
+        (lantern.isCut() && lantern.killedTime >= 5)
+      ) {
+        this.lanterns.splice(i, 1);
+      }
+    }
+    for (let i = this.arrows.length - 1; i >= 0; i--) {
+      const arrow = this.arrows[i];
+      if (Math.abs(arrow.getPos().y) >= canvasFixedSize.y + 1000 || (arrow.isCut() && arrow.killedTime >= 5)) {
+        this.arrows.splice(i, 1);
+      }
     }
   }
 }

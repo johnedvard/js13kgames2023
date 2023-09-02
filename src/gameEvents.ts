@@ -1,15 +1,16 @@
 export type EventType = 'tick' | 'split' | 'play' | 'wave' | 'web3' | 'killed';
 
-const tickEvent = new CustomEvent('tick');
-const playEvent = new CustomEvent('play');
+const tickEvent = new CustomEvent('tick', { detail: { data: {} } });
+const playEvent = new CustomEvent('play', { detail: { data: {} } });
 const splitEvent = new CustomEvent('split', { detail: { data: {} } });
 const waveEvent = new CustomEvent('wave', { detail: { data: {} } });
 const web3Event = new CustomEvent('web3', { detail: { data: {} } });
 const killedEvent = new CustomEvent('killed', { detail: { data: {} } });
 
 export function emit(eventType: EventType, data?: any) {
-  splitEvent.detail.data = data;
-  window.dispatchEvent(getEvent(eventType));
+  const evt = getEvent(eventType);
+  evt.detail.data = data;
+  window.dispatchEvent(evt);
 }
 export function on(eventType: EventType, callback) {
   window.addEventListener(eventType, callback);

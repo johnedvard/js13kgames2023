@@ -1,11 +1,11 @@
-import { vec2, timeDelta, Sound } from './littlejs';
+import { vec2, timeDelta, Sound, canvasFixedSize } from './littlejs';
 
 import { MySvg } from './MySvg';
 import { pink, yellow } from './colors';
 import { arrowFeatherPath, arrowFlamePath, arrowPath } from './svgPaths';
 import { handleSvgCollisions } from './handleSvgCollisions';
 import { Cmd } from './types/Cmd';
-import { off, on } from './gameEvents';
+import { emit, off, on } from './gameEvents';
 import { miniSliceSfx, sliceSnapSfx } from './music';
 
 export class Arrow {
@@ -17,6 +17,7 @@ export class Arrow {
   ellapsedTime: number = 0;
   snapSound: Sound;
   miniSliceSound: Sound;
+  killedTime = 0;
   constructor(startPos = vec2(0, 0), vel = vec2(0, -1)) {
     this.arrowFeatherSvg.setGameObjectType('f');
     this.arrowSvg.setGameObjectType('a');
@@ -32,6 +33,12 @@ export class Arrow {
     this.maxTipX = this.arrowFlameSvg.cmds[2].x + 2;
     on('split', this.onSplitArrow);
     on('split', this.onSplitFeather);
+  }
+  getPos() {
+    return this.arrowSvg.pos;
+  }
+  isCut() {
+    return this.arrowSvg.isCut();
   }
   onSplitArrow = (evt) => {
     const other = evt.detail.data.svg;
@@ -62,6 +69,7 @@ export class Arrow {
       this.arrowFeatherSvg.children[1].setGravityScale(10);
     }
     if (this.arrowSvg.isCut()) {
+      this.killedTime += timeDelta;
       this.arrowFlameSvg.setScale(0.93);
       this.arrowFlameSvg.setPos(vec2(this.arrowFlameSvg.pos.x + 5, this.arrowFlameSvg.pos.y + 16));
       const c1 = this.arrowSvg.children[0];
@@ -76,6 +84,11 @@ export class Arrow {
     this.updateFlameAnim();
     handleSvgCollisions(this.arrowFeatherSvg, 3);
     handleSvgCollisions(this.arrowSvg, 0.1);
+    if (!this.arrowSvg.isCut()) {
+      if (Math.abs(this.arrowSvg.pos.y) >= canvasFixedSize.y + 400) {
+        emit('killed', { msg: 'Sam took an arrow in the knee' });
+      }
+    }
   }
 
   updateFlameAnim() {

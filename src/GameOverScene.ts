@@ -14,9 +14,15 @@ export class GameOverScene {
   playButton: MySvg[] = [];
   web3Button: MySvg[] = [];
   isEventInProgress = false;
+  killedMsg = '';
   constructor(private sceneManager: SceneManager) {
     on('split', this.onSplit);
+    on('killed', this.onKilled);
   }
+  onKilled = (evt) => {
+    const msg = evt.detail.data.msg;
+    this.killedMsg = msg;
+  };
   onSplit = (evt) => {
     if (this.sceneManager.currentScene != 'g') return;
     const other = evt.detail.data.svg;
@@ -57,7 +63,15 @@ export class GameOverScene {
     this.playButton.forEach((svg) => svg.render(ctx));
     this.web3Button.forEach((svg) => svg.render(ctx));
     this.renderHighScore(ctx);
+    this.renderKilledMsg(ctx);
     ctx.restore();
+  }
+
+  renderKilledMsg(ctx) {
+    ctx.font = `${28}px serif`;
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.fillText(this.killedMsg, canvasFixedSize.x / 2, 400);
   }
   renderHighScore(ctx) {
     const score = getStoredHighscore();
