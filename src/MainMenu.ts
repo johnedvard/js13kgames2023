@@ -58,7 +58,7 @@ export class MainMenu {
   };
 
   update() {
-    if (!this.music.isPlaying() && !this.isChangingScene) this.music.play();
+    // if (!this.music.isPlaying() && !this.isChangingScene) this.music.play();
     this.ellapsedTime += timeDelta;
     this.letters.forEach((s) => handleSvgCollisions(s));
     this.playButton.forEach((s) => handleSvgCollisions(s, 1));
