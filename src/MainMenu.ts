@@ -1,4 +1,4 @@
-import { vec2, timeDelta, Music } from './littlejs';
+import { vec2, timeDelta, Music, canvasFixedSize } from './littlejs';
 
 import { MySvg } from './MySvg';
 import { handleSvgCollisions } from './handleSvgCollisions';
@@ -7,6 +7,7 @@ import { emit, on } from './gameEvents';
 import { createA, createM, createPlayButton, createS, createWeb3Button } from './bambooFont';
 import { SceneManager } from './SceneManager';
 import { menuSong } from './music';
+import { smoothstep } from './smoothstep';
 
 export class MainMenu {
   letters: MySvg[] = [];
@@ -72,6 +73,23 @@ export class MainMenu {
     this.letters.forEach((l) => l.render(ctx));
     this.playButton.forEach((s) => s.render(ctx));
     this.web3Button.forEach((s) => s.render(ctx));
+    ctx.restore();
+    this.renderSliceHelp(ctx);
+  }
+
+  helpEllapsedTime = 0;
+  helpDuration = 1;
+  renderSliceHelp(ctx) {
+    this.helpEllapsedTime = (this.helpEllapsedTime + timeDelta) % (this.helpDuration * 2);
+    if (this.helpEllapsedTime >= 1.1) return;
+    const startPos = vec2(canvasFixedSize.x / 2 - 150, 800);
+    const endPos = vec2(canvasFixedSize.x / 2 + 150, 700);
+    const x = smoothstep(startPos.x, endPos.x, this.helpEllapsedTime / this.helpDuration);
+    const y = smoothstep(startPos.y, endPos.y, this.helpEllapsedTime / this.helpDuration);
+    ctx.save();
+    ctx.font = '42px serif';
+    ctx.shadowColor = 'black';
+    ctx.fillText('👆', x, y);
     ctx.restore();
   }
 }

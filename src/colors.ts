@@ -1,6 +1,7 @@
 export const red = '#EE2B16';
 export const amber = '#FF5E19';
 export const black = '#141414';
+export const lightBlack = '#171717';
 export const blue = '#3765CA';
 export const teal = '#22B5FF';
 export const lightBlue = '#0096C8';

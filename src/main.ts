@@ -1,7 +1,16 @@
-import { vec2, setGravity, engineInit, mainContext, setCanvasFixedSize, canvasFixedSize } from './littlejs';
+import {
+  vec2,
+  setGravity,
+  engineInit,
+  mainContext,
+  setCanvasFixedSize,
+  mainCanvas,
+  canvasFixedSize,
+  timeDelta,
+} from './littlejs';
 
 import { drawTouchLine, updateMouseControls } from './inputUtils';
-import { black } from './colors';
+import { black, lightBlack } from './colors';
 import { emit } from './gameEvents';
 import { SceneManager } from './SceneManager';
 
@@ -51,22 +60,31 @@ function gameRender() {
   // draw any background effects that appear behind objects
 
   const ctx = mainContext;
-  drawBackground(ctx);
+  mainCanvas.style.background = black;
+  renderBackground(ctx);
   sceneManager.render(ctx);
-
   drawTouchLine(ctx);
+}
+
+let currentBgScroll = 1000;
+const maxBgScroll = 1000;
+const rectangles = 20;
+const bgPadding = 130;
+const scrollSpeed = 35;
+function renderBackground(ctx) {
+  currentBgScroll = (currentBgScroll + timeDelta * scrollSpeed) % maxBgScroll;
+  ctx.save();
+  ctx.fillStyle = lightBlack;
+  for (let i = -10; i < rectangles; i++) {
+    const posY = currentBgScroll + i * bgPadding;
+    ctx.fillRect(-10, posY, canvasFixedSize.x + 20, 30);
+  }
+  ctx.restore();
 }
 
 function gameRenderPost() {
   // called after objects are rendered
   // draw effects or hud that appear above all objects
-}
-
-function drawBackground(ctx) {
-  ctx.save();
-  ctx.fillStyle = black;
-  ctx.fillRect(0, 0, canvasFixedSize.x, canvasFixedSize.y);
-  ctx.restore();
 }
 // Startup LittleJS Engine
 engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRenderPost);
