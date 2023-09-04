@@ -64,7 +64,7 @@ export function drawTouchLine(ctx) {
 export function updateMouseControls() {
   if (mouseWasPressed() || mouseIsDown(0)) {
     hasInteracted = true;
-    playMusic();
+    // playMusic();
   }
   if (!mouseIsDown(0)) return;
   const pos = mousePosScreen;
@@ -94,11 +94,11 @@ export function setCurrentMusic(newMusic: Music) {
   music = newMusic;
 }
 
-function playMusic() {
-  if (music && !music.isPlaying()) {
-    music.play();
-  }
-}
+// function playMusic() {
+//   if (music && !music.isPlaying()) {
+//     music.play();
+//   }
+// }
 function getDrawSoundFromColor(color: string) {
   switch (color) {
     case lightBlue:
