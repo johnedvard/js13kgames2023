@@ -13,6 +13,7 @@ import { bambooPath } from './svgPaths';
 import { handleSvgCollisions } from './handleSvgCollisions';
 import { SceneManager } from './SceneManager';
 import { addScore, setCurrentScore } from './scoreUtils';
+import { setCurrentMusic } from './inputUtils';
 
 export class Level {
   arrows: Arrow[] = [];
@@ -144,6 +145,7 @@ export class Level {
   }
   start() {
     console.log('start level');
+    setCurrentMusic(this.music);
     // Always start the first and second color with red and blue. Acts like a tutorial
     setCurrentScore(0);
     this.currentColorToSlice = 'r';

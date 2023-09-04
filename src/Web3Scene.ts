@@ -227,7 +227,6 @@ export class Web3Scene {
     ctx.restore();
   }
   start() {
-    console.log('start web 3');
     this.playBtn.length = 0;
     this.buyLightSaberBtn.length = 0;
     this.buyHaloSaberBtn.length = 0;

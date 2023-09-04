@@ -2009,7 +2009,7 @@ function glInit() {
       'attribute vec2 p,t;' + // position, uv
       'attribute vec4 c,a;' + // color, additiveColor
       'varying vec4 v,d,e;' + // return uv, color, additiveColor
-      'void main(){' + // shader entry point
+      'void _hasClicked(){' + // shader entry point
       'gl_Position=m*vec4(p,1,1);' + // transform position
       'v=vec4(t,p);d=c;e=a;' + // pass stuff to fragment shader
       '}', // end of shader

@@ -8,6 +8,7 @@ import { createA, createM, createPlayButton, createS, createWeb3Button } from '.
 import { SceneManager } from './SceneManager';
 import { menuSong } from './music';
 import { smoothstep } from './smoothstep';
+import { hasClicked, setCurrentMusic } from './inputUtils';
 
 export class MainMenu {
   letters: MySvg[] = [];
@@ -21,6 +22,7 @@ export class MainMenu {
     this.playButton = createPlayButton();
     this.web3Button = createWeb3Button();
     this.music = new Music(menuSong);
+    setCurrentMusic(this.music);
 
     on('split', this.onSplit);
   }
@@ -46,6 +48,7 @@ export class MainMenu {
       if (svg == other) {
         this.isChangingScene = true;
         this.music.stop();
+        setCurrentMusic(null);
         emit('play');
       }
     });
@@ -53,6 +56,7 @@ export class MainMenu {
       if (svg == other) {
         this.isChangingScene = true;
         this.music.stop();
+        setCurrentMusic(null);
         emit('web3');
       }
     });
@@ -74,7 +78,9 @@ export class MainMenu {
     this.playButton.forEach((s) => s.render(ctx));
     this.web3Button.forEach((s) => s.render(ctx));
     ctx.restore();
-    this.renderSliceHelp(ctx);
+    if (hasClicked()) {
+      this.renderSliceHelp(ctx);
+    }
   }
 
   helpEllapsedTime = 0;

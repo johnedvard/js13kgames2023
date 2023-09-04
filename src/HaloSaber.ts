@@ -11,7 +11,6 @@ export class HaloSaber {
 
   constructor(collection: INftCollection) {
     collection.metadata.attributes.forEach((a) => {
-      console.log('', a.trait_type);
       switch (a.trait_type) {
         case 'Handle':
           this.handleSvg = new MySvg(a.value, null, null, 'white');

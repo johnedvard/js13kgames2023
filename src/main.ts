@@ -66,8 +66,8 @@ function gameRender() {
   drawTouchLine(ctx);
 }
 
-let currentBgScroll = 1000;
-const maxBgScroll = 1000;
+let currentBgScroll = 1200;
+const maxBgScroll = 1200;
 const rectangles = 20;
 const bgPadding = 130;
 const scrollSpeed = 35;
