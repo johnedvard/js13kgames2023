@@ -47,7 +47,7 @@ export function addScore(svg: MySvg, point: vec2) {
 }
 
 function startScoreRoutine(svg: MySvg, point: vec2, score: number) {
-  const to = vec2(0, 0);
+  const to = vec2(35, 55);
   const duration = 1;
   let ellapsedTime = 0;
   let from: vec2 = point.copy();

@@ -1,18 +1,10 @@
-import {
-  vec2,
-  setGravity,
-  engineInit,
-  mainContext,
-  setCanvasFixedSize,
-  mainCanvas,
-  canvasFixedSize,
-  timeDelta,
-} from './littlejs';
+import { vec2, setGravity, engineInit, mainContext, setCanvasFixedSize, mainCanvas } from './littlejs';
 
 import { drawTouchLine, updateMouseControls } from './inputUtils';
-import { black, lightBlack } from './colors';
+import { black } from './colors';
 import { emit } from './gameEvents';
 import { SceneManager } from './SceneManager';
+import { renderBackgroundScroll } from './backgroundScroll';
 
 // const kabutoEmblem =
 //   'M51.793,70.012C46.372,73.975 22.116,73.975 16.695,70.012C13.893,67.963 7.256,48.475 7.695,25.012C8.135,1.549 -2.816,-0.175 0.695,0.012C13.195,0.679 20.862,5.679 28.695,20.012C28.695,20.012 17.792,18.522 16.695,32.012C16.321,36.618 17.862,54.512 20.695,61.012C22.499,65.149 45.99,65.149 47.793,61.012C50.626,54.512 52.167,36.618 51.793,32.012C50.697,18.522 39.793,20.012 39.793,20.012C47.626,5.679 55.293,0.679 67.793,0.012C71.304,-0.175 60.354,1.549 60.793,25.012C61.233,48.475 54.595,67.963 51.793,70.012Z';
@@ -61,25 +53,9 @@ function gameRender() {
 
   const ctx = mainContext;
   mainCanvas.style.background = black;
-  renderBackground(ctx);
+  renderBackgroundScroll(ctx);
   sceneManager.render(ctx);
   drawTouchLine(ctx);
-}
-
-let currentBgScroll = 1200;
-const maxBgScroll = 1200;
-const rectangles = 20;
-const bgPadding = 130;
-const scrollSpeed = 35;
-function renderBackground(ctx) {
-  currentBgScroll = (currentBgScroll + timeDelta * scrollSpeed) % maxBgScroll;
-  ctx.save();
-  ctx.fillStyle = lightBlack;
-  for (let i = -10; i < rectangles; i++) {
-    const posY = currentBgScroll + i * bgPadding;
-    ctx.fillRect(-10, posY, canvasFixedSize.x + 20, 30);
-  }
-  ctx.restore();
 }
 
 function gameRenderPost() {

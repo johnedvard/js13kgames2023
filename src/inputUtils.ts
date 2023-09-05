@@ -16,9 +16,13 @@ let music: Music;
 let _hasInteracted = false;
 
 function listenForInteractive() {
-  document.addEventListener('click', () => {
+  document.addEventListener('touchstart', () => {
     _hasInteracted = true;
-    playMusic();
+    requestAnimationFrame(playMusic);
+  });
+  document.addEventListener('mousedown', () => {
+    _hasInteracted = true;
+    requestAnimationFrame(playMusic);
   });
 }
 
