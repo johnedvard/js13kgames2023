@@ -1,10 +1,9 @@
 import { vec2, canvasFixedSize } from './littlejs';
 
 import { HaloSaber } from './HaloSaber';
-import { INftCollection } from './INftCollection';
 import { LightSaber } from './LightSaber';
 import { MySvg } from './MySvg';
-import { SERIES_ID_HALO_SABER, SERIES_ID_LIGHT_SABER, haloSaberData, lightSaberData } from './NearConnection';
+import { haloSaberData, lightSaberData } from './NearConnection';
 import { SceneManager } from './SceneManager';
 import {
   createB,

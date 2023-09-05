@@ -1,6 +1,6 @@
 import { mouseIsDown, mousePosScreen, Sound, Music, vec2 } from './littlejs';
 
-import { darkPink, lightBlue, pink } from './colors';
+import { darkPink, lightBlue } from './colors';
 import { lightSaberDrawSfx, haloSaberDrawSfx } from './music';
 import { LightSaber } from './LightSaber';
 import { getHaloSaber, getLightSaber } from './near';
