@@ -8,7 +8,7 @@ import { createA, createM, createPlayButton, createS, createWeb3Button } from '.
 import { SceneManager } from './SceneManager';
 import { menuSong } from './music';
 import { smoothstep } from './smoothstep';
-import { hasClicked, setCurrentMusic } from './inputUtils';
+import { hasInteracted, setCurrentMusic } from './inputUtils';
 
 export class MainMenu {
   letters: MySvg[] = [];
@@ -78,14 +78,14 @@ export class MainMenu {
     this.playButton.forEach((s) => s.render(ctx));
     this.web3Button.forEach((s) => s.render(ctx));
     ctx.restore();
-    if (hasClicked()) {
-      this.renderSliceHelp(ctx);
-    }
+
+    this.renderSliceHelp(ctx);
   }
 
   helpEllapsedTime = 0;
   helpDuration = 1;
   renderSliceHelp(ctx) {
+    if (!hasInteracted()) return;
     this.helpEllapsedTime = (this.helpEllapsedTime + timeDelta) % (this.helpDuration * 2);
     if (this.helpEllapsedTime >= 1.1) return;
     const startPos = vec2(canvasFixedSize.x / 2 - 150, 800);
