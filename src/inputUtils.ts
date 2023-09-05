@@ -1,7 +1,10 @@
-import { mouseIsDown, mousePosScreen, Sound, Music } from './littlejs';
+import { mouseIsDown, mousePosScreen, Sound, Music, vec2 } from './littlejs';
 
-import { darkPink, lightBlue } from './colors';
+import { darkPink, lightBlue, pink } from './colors';
 import { lightSaberDrawSfx, haloSaberDrawSfx } from './music';
+import { LightSaber } from './LightSaber';
+import { getHaloSaber, getLightSaber } from './near';
+import { HaloSaber } from './HaloSaber';
 
 export const mousePoints = [];
 export const maxDraws = 6;
@@ -14,6 +17,10 @@ let selectedDrawSound: Sound;
 let equippedDrawSound: Sound;
 let music: Music;
 let _hasInteracted = false;
+let lightSaber: LightSaber = null;
+let haloSaber: HaloSaber = null;
+let equippedSword: HaloSaber | LightSaber | null = null;
+let selectedSword: HaloSaber | LightSaber | null = null;
 
 function listenForInteractive() {
   document.addEventListener('touchstart', () => {
@@ -44,6 +51,11 @@ function getDrawSound() {
   return equippedDrawSound;
 }
 
+function getCurrentSword() {
+  if (isUseSelectedColor) return selectedSword;
+  return equippedSword;
+}
+
 export function drawTouchLine(ctx) {
   if (!mousePoints.length) return;
 
@@ -53,6 +65,15 @@ export function drawTouchLine(ctx) {
   }
 
   ctx.strokeStyle = getColorToDraw();
+
+  const sword = getCurrentSword();
+  if (sword) {
+    const pos = mousePoints[mousePoints.length - 1];
+    if (pos) {
+      sword.setPos(vec2(pos.x, pos.y));
+      sword.render(ctx);
+    }
+  }
   const drawSound = getDrawSound();
   if (drawSound) {
     drawSound.play();
@@ -89,10 +110,12 @@ export function setIsUseSelectedColor(value: boolean) {
 export function setSelectedDragColor(color: string) {
   selectedDrawColor = color;
   selectedDrawSound = getDrawSoundFromColor(color);
+  selectedSword = getSwordFromColor(color);
 }
 export function setEquippedDragColor(color: string) {
   equippedDrawColor = color;
   equippedDrawSound = getDrawSoundFromColor(color);
+  equippedSword = getSwordFromColor(color);
 }
 export function hasInteracted() {
   return _hasInteracted;
@@ -106,6 +129,31 @@ function playMusic() {
     music.play();
   }
 }
+
+function getSwordFromColor(color: string) {
+  if (color == darkPink) {
+    if (!haloSaber) {
+      const originalSaber = getHaloSaber();
+      haloSaber = new HaloSaber(originalSaber.getCollection());
+      haloSaber.setPos(vec2(0, 0));
+      haloSaber.translate(vec2(-124, 0));
+      haloSaber.setScale(vec2(-1, 1));
+    }
+    return haloSaber;
+  } else if (color == lightBlue) {
+    if (!lightSaber) {
+      const originalSaber = getLightSaber();
+      lightSaber = new LightSaber(originalSaber.getCollection());
+      lightSaber.setPos(vec2(0, 0));
+      lightSaber.translate(vec2(-83, 0));
+      lightSaber.setScale(vec2(-1, 1));
+    }
+    return lightSaber;
+  } else {
+    return null;
+  }
+}
+
 function getDrawSoundFromColor(color: string) {
   switch (color) {
     case lightBlue:

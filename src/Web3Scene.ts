@@ -22,7 +22,17 @@ import {
 } from './bambooFont';
 import { emit, on } from './gameEvents';
 import { handleSvgCollisions } from './handleSvgCollisions';
-import { buyNftSword, getNftCollection, getNftTokensForOwner, initNear, isLoggedIn, isOwned, login } from './near';
+import {
+  buyNftSword,
+  getHaloSaber,
+  getLightSaber,
+  getNftCollection,
+  getNftTokensForOwner,
+  initNear,
+  isLoggedIn,
+  isOwned,
+  login,
+} from './near';
 import { setEquippedDragColor, setIsUseSelectedColor, setSelectedDragColor } from './inputUtils';
 import { darkPink, lightBlue } from './colors';
 import { tween } from './tween';
@@ -152,16 +162,10 @@ export class Web3Scene {
   async initWeapons() {
     const [nftCollection] = await Promise.all([getNftCollection()]);
     console.log('nftCollection', nftCollection);
-    nftCollection.forEach((c: INftCollection) => {
-      switch (c['token_series_id']) {
-        case SERIES_ID_LIGHT_SABER:
-          this.lightSaber = new LightSaber(c);
-          break;
-        case SERIES_ID_HALO_SABER:
-          this.haloSaber = new HaloSaber(c);
-          break;
-      }
-    });
+    this.lightSaber = getLightSaber();
+    this.haloSaber = getHaloSaber();
+    this.lightSaber = new LightSaber(this.lightSaber.collection);
+    this.haloSaber = new HaloSaber(this.haloSaber.collection);
   }
   update() {
     if (this.lightSaber) this.lightSaber.update();

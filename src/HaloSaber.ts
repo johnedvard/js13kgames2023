@@ -8,8 +8,10 @@ export class HaloSaber {
   handleSvg: MySvg;
   swordPart1Svg: MySvg;
   swordPart2Svg: MySvg;
+  collection: INftCollection;
 
   constructor(collection: INftCollection) {
+    this.collection = collection;
     collection.metadata.attributes.forEach((a) => {
       switch (a.trait_type) {
         case 'Handle':
@@ -29,7 +31,7 @@ export class HaloSaber {
       }
     });
     this.getSvgs().forEach((svg) => {
-      svg.translateSvg(vec2(150, 300));
+      svg.setPos(vec2(150, 300));
     });
   }
   update() {
@@ -47,5 +49,23 @@ export class HaloSaber {
     if (this.swordPart2Svg) svgs.push(this.swordPart2Svg);
     if (this.handleSvg) svgs.push(this.handleSvg);
     return svgs;
+  }
+  getCollection() {
+    return this.collection;
+  }
+  setScale(scale: vec2) {
+    this.getSvgs().forEach((svg) => {
+      svg.setScale(scale);
+    });
+  }
+  setPos(pos: vec2) {
+    this.getSvgs().forEach((svg) => {
+      svg.setPos(pos);
+    });
+  }
+  translate(dist: vec2) {
+    this.getSvgs().forEach((svg) => {
+      svg.translateSvg(dist);
+    });
   }
 }

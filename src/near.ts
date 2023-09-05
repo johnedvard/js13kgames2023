@@ -1,4 +1,6 @@
+import { HaloSaber } from './HaloSaber';
 import { INftCollection } from './INftCollection';
+import { LightSaber } from './LightSaber';
 import {
   NearConnection,
   SERIES_ID_HALO_SABER,
@@ -17,6 +19,8 @@ export const PARAS_COLLECTION_API = 'https://js13kgames2023.netlify.app/.netlify
 let nftTokensForOwner;
 let nftCollections;
 let nearConnection;
+let lightSaber: LightSaber;
+let haloSaber: HaloSaber;
 
 function updateNftOwnership(tokens: any[]) {
   tokens.forEach((token) => {
@@ -35,7 +39,7 @@ function updateNftOwnership(tokens: any[]) {
   });
 }
 
-export async function initNear(): Promise<any> {
+export function initNear(): Promise<any> {
   return loadScript(NEAR_API).then(() => {
     nearConnection = new NearConnection();
     return nearConnection.initContract();
@@ -55,7 +59,19 @@ export function getNftTokensForOwner() {
 
 export function getNftCollection(): Promise<INftCollection[]> {
   return new Promise(async (resolve) => {
-    if (!nftCollections) nftCollections = await getParasNftCollection();
+    if (!nftCollections) {
+      nftCollections = await getParasNftCollection();
+      nftCollections.forEach((c: INftCollection) => {
+        switch (c['token_series_id']) {
+          case SERIES_ID_LIGHT_SABER:
+            lightSaber = new LightSaber(c);
+            break;
+          case SERIES_ID_HALO_SABER:
+            haloSaber = new HaloSaber(c);
+            break;
+        }
+      });
+    }
     resolve(nftCollections);
   });
 }
@@ -85,4 +101,11 @@ function getParasNftCollection(): Promise<INftCollection[]> {
     .then((res) => {
       return res.data.results.filter((data) => data['metadata']['copies'] > 0 && !data['is_non_mintable']);
     });
+}
+
+export function getHaloSaber() {
+  return haloSaber;
+}
+export function getLightSaber() {
+  return lightSaber;
 }

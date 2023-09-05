@@ -283,7 +283,8 @@ export class MySvg extends EngineObject {
     return this.children.length > 0;
   }
 
-  setScale(scale: number) {
+  setScale(scale: number | vec2) {
+    if (scale && !scale.x) scale = vec2(scale, scale);
     scaleCoordinates(this.cmds, scale);
     this.current2DPath.path2D = new Path2D(this.getCmdsAsPathString());
     this.current2DPath.path = this.getCmdsAsPathString();
