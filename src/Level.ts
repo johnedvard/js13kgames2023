@@ -76,11 +76,13 @@ export class Level {
 
   updateColorToSlice() {
     if (this.ellapsedPlayTime == 0) return;
+
     this.currentSliceColorEllapseTime += timeDelta;
     if (this.currentSliceColorEllapseTime >= this.sliceColorMaxLifeTime) {
       this.currentSliceColorEllapseTime = 0;
       this.currentColorToSlice = this.nextColorToSlice;
       this.nextColorToSlice = this.getRandomSliceColor();
+      emit('toslice', { colorToSlice: this.currentColorToSlice });
     }
   }
 
@@ -162,6 +164,7 @@ export class Level {
     this.currentWave = 0;
     this.currentSliceColorEllapseTime = 0;
     this.currentWaveEllapseTime = 0;
+    emit('toslice', { colorToSlice: this.currentColorToSlice });
     this.music.stop();
     this.music.play();
   }
