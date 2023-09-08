@@ -6,9 +6,7 @@ import { tweenRot } from './tween';
 import { emit, on } from './gameEvents';
 import { createA, createM, createPlayButton, createS, createWeb3Button } from './bambooFont';
 import { SceneManager } from './SceneManager';
-import { menuSong } from './music';
 import { smoothstep } from './smoothstep';
-import { hasInteracted, setCurrentMusic } from './inputUtils';
 
 export class MainMenu {
   letters: MySvg[] = [];
@@ -17,14 +15,23 @@ export class MainMenu {
   ellapsedTime = 0;
   music: Music;
   isChangingScene = false;
+  hasInteracted = false;
   constructor(private sceneManager: SceneManager) {
     this.createTitle();
     this.playButton = createPlayButton();
     this.web3Button = createWeb3Button();
-    this.music = new Music(menuSong);
-    setCurrentMusic(this.music);
+    this.music = this.sceneManager.mainMenuMusic;
 
     on('split', this.onSplit);
+    this.listenForInteractive();
+  }
+  listenForInteractive() {
+    const onInteractive = () => {
+      if (this.hasInteracted) return;
+      this.hasInteracted = true;
+    };
+    document.addEventListener('touchstart', onInteractive);
+    document.addEventListener('mousedown', onInteractive);
   }
 
   createTitle() {
@@ -48,7 +55,6 @@ export class MainMenu {
       if (svg == other) {
         this.isChangingScene = true;
         this.music.stop();
-        setCurrentMusic(null);
         emit('play');
       }
     });
@@ -56,7 +62,6 @@ export class MainMenu {
       if (svg == other) {
         this.isChangingScene = true;
         this.music.stop();
-        setCurrentMusic(null);
         emit('web3');
       }
     });
@@ -85,7 +90,7 @@ export class MainMenu {
   helpEllapsedTime = 0;
   helpDuration = 1;
   renderSliceHelp(ctx) {
-    if (!hasInteracted()) return;
+    if (!this.hasInteracted) return;
     this.helpEllapsedTime = (this.helpEllapsedTime + timeDelta) % (this.helpDuration * 2);
     if (this.helpEllapsedTime >= 1.1) return;
     const startPos = vec2(canvasFixedSize.x / 2 - 150, 800);

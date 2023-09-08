@@ -1,10 +1,3 @@
-function getZeros(): number[] {
-  const res = [];
-  for (let i = 0; i < 1000; i++) {
-    res.push(0);
-  }
-  return res;
-}
 export const lightSaberDrawSfx = [0.07, , 243, 0.1, 0.1, 0.7, , 1.16, -1.6, 0.3, , , 0.04, , , 0.1, , 0.99, 0.09, 0.06];
 export const haloSaberDrawSfx = [0.6, , 140, 0.05, 0.29, 0.33, 1, 1.6, , , , , 0.16, , , , 0.04, 0.66, 0.13];
 export const miniSliceSfx = [2, , 1573, 0.01, 0.01, 0.01, 1, 0.7, , 30, , , 0.01, , 0.7, , 0.03, 0.4, 0.02, 0.02];
@@ -23,7 +16,7 @@ const closedHihat = [0.2, , 1619, 0.01, 0.02, 0.01, 4, 0.39, , 15, , , 0.01, , 1
 const shamisen = [0.7, 0, 124, , 0.03, 0.55, 2, , , , , , , , , , , 0.36, 0.01, 0.36];
 const drum = [0.2, 0, 229, , 0.05, 0.19, 3, , 0.5, 2.1, , , 0.27, 7.5, , 0.1, 0.02, 1.03, , 0.03];
 const chords = [0.3, 0, 122, 0.02, 0.54, 0.4, 1, 0.17, , , , , , 0.4, , , , 0.28, 0.11];
-export const menuSong = [[closedHihat], [[[, , 24, 24, 24, , 25, 13, 13, ,]]], getZeros(), , {}];
+export const menuSong = [[closedHihat], [[[, , 24, 24, 24, , 25, 13, 13, ,]]], [0], , {}];
 export const song = [
   [shamisen, drum, chords, closedHihat],
   [

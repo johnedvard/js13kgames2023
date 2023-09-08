@@ -1,4 +1,4 @@
-import { mouseIsDown, mousePosScreen, Sound, Music, vec2 } from './littlejs';
+import { mouseIsDown, mousePosScreen, Sound, vec2 } from './littlejs';
 
 import { darkPink, lightBlue } from './colors';
 import { lightSaberDrawSfx, haloSaberDrawSfx } from './music';
@@ -15,23 +15,10 @@ let lightSaberDrawSound = new Sound(lightSaberDrawSfx);
 let haloSaberDrawSound = new Sound(haloSaberDrawSfx);
 let selectedDrawSound: Sound;
 let equippedDrawSound: Sound;
-let music: Music;
-let _hasInteracted = false;
 let lightSaber: LightSaber = null;
 let haloSaber: HaloSaber = null;
 let equippedSword: HaloSaber | LightSaber | null = null;
 let selectedSword: HaloSaber | LightSaber | null = null;
-
-function listenForInteractive() {
-  document.addEventListener('touchstart', () => {
-    _hasInteracted = true;
-    requestAnimationFrame(playMusic);
-  });
-  document.addEventListener('mousedown', () => {
-    _hasInteracted = true;
-    requestAnimationFrame(playMusic);
-  });
-}
 
 function removeMouseDraggings() {
   for (let i = mousePoints.length - 1; i >= 0; i--) {
@@ -117,18 +104,6 @@ export function setEquippedDragColor(color: string) {
   equippedDrawSound = getDrawSoundFromColor(color);
   equippedSword = getSwordFromColor(color);
 }
-export function hasInteracted() {
-  return _hasInteracted;
-}
-export function setCurrentMusic(newMusic: Music) {
-  music = newMusic;
-}
-
-function playMusic() {
-  if (music && !music.isPlaying()) {
-    music.play();
-  }
-}
 
 function getSwordFromColor(color: string) {
   if (color == darkPink) {
@@ -164,4 +139,3 @@ function getDrawSoundFromColor(color: string) {
       return null;
   }
 }
-listenForInteractive();
