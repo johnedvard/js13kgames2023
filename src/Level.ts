@@ -27,9 +27,9 @@ export class Level {
   nextColorToSlice: ColorToSliceType = 'b';
   maxColorSize = 6;
   currentWave = 0;
-  sliceColorMaxLifeTime = 4; // how long the current slice color is active
+  sliceColorMaxLifeTime = 7; // how long the current slice color is active
   currentSliceColorEllapseTime = 0;
-  waveDuration = 3;
+  waveDuration = 7;
   currentWaveEllapseTime = 0;
 
   constructor(private sceneManager: SceneManager) {
@@ -70,6 +70,8 @@ export class Level {
     this.arrows.forEach((s) => s.render(ctx));
     this.lanterns.forEach((s) => s.render(ctx));
     this.bamboos.forEach((s) => s.render(ctx));
+
+    this.renderTutorial(ctx);
 
     this.animateColorsToSliceBar(ctx);
   }
@@ -189,7 +191,9 @@ export class Level {
         this.lanterns.push(new Lantern(vec2(600 + i * 146, canvasFixedSize.y + 200), 'b', vec2(-1, 0)));
       }
     }
-    // skip wave 2
+    if (this.currentWave == 2) {
+      this.arrows.push(new Arrow(vec2(canvasFixedSize.x / 2, -300), vec2(0, -1)));
+    }
     if (this.currentWave == 3 || this.currentWave == 4) {
       for (let i = 0; i < 2; i++) {
         const sliceColor = i ? 'r' : 'b';
@@ -210,11 +214,18 @@ export class Level {
         );
       }
     }
-    // skipe wave 6 (player needs time to destroy arrows)
+    if (this.currentWave == 6) {
+      this.spawnLanterns();
+      this.spawnBamboos();
+      this.waveDuration = 6;
+      this.sliceColorMaxLifeTime = 6;
+    }
     if (this.currentWave == 7 || this.currentWave == 8) {
       this.spawnBamboos();
     }
     if (this.currentWave >= 10) {
+      this.waveDuration = 5;
+      this.sliceColorMaxLifeTime = 5;
       if (this.currentWave % 2 == 0) {
         const sliceColor = this.getRandomSliceColor();
         let x = 70 + Math.floor(100 + Math.random() * (canvasFixedSize.x - 140));
@@ -229,6 +240,10 @@ export class Level {
       if (this.currentWave % 3 == 0) {
         this.spawnBamboos();
       }
+    }
+    if (this.currentWave >= 20) {
+      this.sliceColorMaxLifeTime = 4;
+      this.waveDuration = 4;
     }
   };
 
@@ -287,5 +302,33 @@ export class Level {
         this.arrows.splice(i, 1);
       }
     }
+  }
+
+  renderTutorial(ctx) {
+    ctx.save();
+    ctx.font = `${28}px serif`;
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.moveTo(canvasFixedSize.x / 2, 350);
+    ctx.lineTo(canvasFixedSize.x / 2, 75);
+    ctx.moveTo(canvasFixedSize.x / 2, 75);
+    ctx.lineTo(canvasFixedSize.x / 2 + 10, 90);
+    ctx.moveTo(canvasFixedSize.x / 2, 75);
+    ctx.lineTo(canvasFixedSize.x / 2 - 10, 90);
+    const sameColorTxt = 'Only slice same color';
+    if (this.currentWave == 0) {
+      ctx.fillText(`${sameColorTxt} (now red)`, canvasFixedSize.x / 2, 400);
+      ctx.strokeStyle = red;
+      ctx.stroke();
+    } else if (this.currentWave == 1) {
+      ctx.fillText(`${sameColorTxt} (now blue)`, canvasFixedSize.x / 2, 400);
+      ctx.strokeStyle = blue;
+      ctx.stroke();
+    } else if (this.currentWave == 2) {
+      ctx.fillText('WARNING. Slice arrow or die', canvasFixedSize.x / 2, 400);
+    }
+    ctx.restore();
   }
 }
