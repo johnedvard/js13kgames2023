@@ -111,12 +111,6 @@ const lerp = (p, min = 0, max = 1) => min + clamp(p) * (max - min);
  *  @memberof Utilities */
 const smoothStep = (p) => p * p * (3 - 2 * p);
 
-/** Returns the nearest power of two not less then the value
- *  @param {Number} value
- *  @return {Number}
- *  @memberof Utilities */
-const nearestPowerOfTwo = (v) => 2 ** Math.ceil(Math.log2(v));
-
 /** Returns true if two axis aligned bounding boxes are overlapping
  *  @param {Vector2} pointA  - Center of box A
  *  @param {Vector2} sizeA   - Size of box A
@@ -178,38 +172,6 @@ const randInCircle = (radius = 1, minRadius = 0) =>
  *  @memberof Random */
 const randVector = (length = 1) => new Vector2().setAngle(rand(2 * PI), length);
 
-/** Returns a random color between the two passed in colors, combine components if linear
- *  @param {Color}   [colorA=Color()]
- *  @param {Color}   [colorB=Color(0,0,0,1)]
- *  @param {Boolean} [linear]
- *  @return {Color}
- *  @memberof Random */
-const randColor = (cA = new Color(), cB = new Color(0, 0, 0, 1), linear) =>
-  linear ? cA.lerp(cB, rand()) : new Color(rand(cA.r, cB.r), rand(cA.g, cB.g), rand(cA.b, cB.b), rand(cA.a, cB.a));
-
-/** Seed used by the randSeeded function
- *  @type {Number}
- *  @default
- *  @memberof Random */
-let randSeed = 1;
-
-/** Set seed used by the randSeeded function, should not be 0
- *  @param {Number} seed
- *  @memberof Random */
-const setRandSeed = (seed) => (randSeed = seed);
-
-/** Returns a seeded random value between the two values passed in using randSeed
- *  @param {Number} [valueA=1]
- *  @param {Number} [valueB=0]
- *  @return {Number}
- *  @memberof Random */
-const randSeeded = (a = 1, b = 0) => {
-  randSeed ^= randSeed << 13;
-  randSeed ^= randSeed >>> 17;
-  randSeed ^= randSeed << 5; // xorshift
-  return b + ((a - b) * abs(randSeed % 1e9)) / 1e9;
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -225,14 +187,6 @@ const randSeeded = (a = 1, b = 0) => {
  * @memberof Utilities
  */
 const vec2 = (x = 0, y) => (x.x == undefined ? new Vector2(x, y == undefined ? x : y) : new Vector2(x.x, x.y));
-
-/**
- * Check if object is a valid Vector2
- * @param {Vector2} vector
- * @return {Boolean}
- * @memberof Utilities
- */
-const isVector2 = (v) => !isNaN(v.x) && !isNaN(v.y);
 
 /**
  * 2D Vector object with vector math library
@@ -423,203 +377,6 @@ class Vector2 {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-/**
- * Create a color object with RGBA values
- * @param {Number} [r=1]
- * @param {Number} [g=1]
- * @param {Number} [b=1]
- * @param {Number} [a=1]
- * @return {Color}
- * @memberof Utilities
- */
-const rgb = (r, g, b, a) => new Color(r, g, b, a);
-
-/**
- * Create a color object with HSLA values
- * @param {Number} [h=0]
- * @param {Number} [s=0]
- * @param {Number} [l=1]
- * @param {Number} [a=1]
- * @return {Color}
- * @memberof Utilities
- */
-const hsl = (h, s, l, a) => new Color().setHSLA(h, s, l, a);
-
-/**
- * Color object (red, green, blue, alpha) with some helpful functions
- * @example
- * let a = new Color;              // white
- * let b = new Color(1, 0, 0);     // red
- * let c = new Color(0, 0, 0, 0);  // transparent black
- * let d = RGB(0, 0, 1);           // blue using rgb color
- * let e = HSL(.3, 1, .5);         // green using hsl color
- */
-class Color {
-  /** Create a color with the components passed in, white by default
-   *  @param {Number} [red=1]
-   *  @param {Number} [green=1]
-   *  @param {Number} [blue=1]
-   *  @param {Number} [alpha=1] */
-  constructor(r = 1, g = 1, b = 1, a = 1) {
-    /** @property {Number} - Red */
-    this.r = r;
-    /** @property {Number} - Green */
-    this.g = g;
-    /** @property {Number} - Blue */
-    this.b = b;
-    /** @property {Number} - Alpha */
-    this.a = a;
-  }
-
-  /** Returns a new color that is a copy of this
-   * @return {Color} */
-  copy() {
-    return new Color(this.r, this.g, this.b, this.a);
-  }
-
-  /** Returns a copy of this color plus the color passed in
-   * @param {Color} color
-   * @return {Color} */
-  add(c) {
-    return new Color(this.r + c.r, this.g + c.g, this.b + c.b, this.a + c.a);
-  }
-
-  /** Returns a copy of this color minus the color passed in
-   * @param {Color} color
-   * @return {Color} */
-  subtract(c) {
-    return new Color(this.r - c.r, this.g - c.g, this.b - c.b, this.a - c.a);
-  }
-
-  /** Returns a copy of this color times the color passed in
-   * @param {Color} color
-   * @return {Color} */
-  multiply(c) {
-    return new Color(this.r * c.r, this.g * c.g, this.b * c.b, this.a * c.a);
-  }
-
-  /** Returns a copy of this color divided by the color passed in
-   * @param {Color} color
-   * @return {Color} */
-  divide(c) {
-    return new Color(this.r / c.r, this.g / c.g, this.b / c.b, this.a / c.a);
-  }
-
-  /** Returns a copy of this color scaled by the value passed in, alpha can be scaled separately
-   * @param {Number} scale
-   * @param {Number} [alphaScale=scale]
-   * @return {Color} */
-  scale(s, a = s) {
-    return new Color(this.r * s, this.g * s, this.b * s, this.a * a);
-  }
-
-  /** Returns a copy of this color clamped to the valid range between 0 and 1
-   * @return {Color} */
-  clamp() {
-    return new Color(clamp(this.r), clamp(this.g), clamp(this.b), clamp(this.a));
-  }
-
-  /** Returns a new color that is p percent between this and the color passed in
-   * @param {Color}  color
-   * @param {Number} percent
-   * @return {Color} */
-  lerp(c, p) {
-    return this.add(c.subtract(this).scale(clamp(p)));
-  }
-
-  /** Sets this color given a hue, saturation, lightness, and alpha
-   * @param {Number} [hue=0]
-   * @param {Number} [saturation=0]
-   * @param {Number} [lightness=1]
-   * @param {Number} [alpha=1]
-   * @return {Color} */
-  setHSLA(h = 0, s = 0, l = 1, a = 1) {
-    const q = l < 0.5 ? l * (1 + s) : l + s - l * s,
-      p = 2 * l - q,
-      f = (p, q, t) =>
-        (t = ((t % 1) + 1) % 1) < 1 / 6
-          ? p + (q - p) * 6 * t
-          : t < 1 / 2
-          ? q
-          : t < 2 / 3
-          ? p + (q - p) * (2 / 3 - t) * 6
-          : p;
-
-    this.r = f(p, q, h + 1 / 3);
-    this.g = f(p, q, h);
-    this.b = f(p, q, h - 1 / 3);
-    this.a = a;
-    return this;
-  }
-
-  /** Returns this color expressed in hsla format
-   * @return {Array} */
-  getHSLA() {
-    const r = clamp(this.r);
-    const g = clamp(this.g);
-    const b = clamp(this.b);
-    const a = clamp(this.a);
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    const l = (max + min) / 2;
-
-    let h = 0,
-      s = 0;
-    if (max != min) {
-      let d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      if (r == max) h = (g - b) / d + (g < b ? 6 : 0);
-      else if (g == max) h = (b - r) / d + 2;
-      else if (b == max) h = (r - g) / d + 4;
-    }
-
-    return [h / 6, s, l, a];
-  }
-
-  /** Returns a new color that has each component randomly adjusted
-   * @param {Number} [amount=.05]
-   * @param {Number} [alphaAmount=0]
-   * @return {Color} */
-  mutate(amount = 0.05, alphaAmount = 0) {
-    return new Color(
-      this.r + rand(amount, -amount),
-      this.g + rand(amount, -amount),
-      this.b + rand(amount, -amount),
-      this.a + rand(alphaAmount, -alphaAmount)
-    ).clamp();
-  }
-
-  /** Returns this color expressed as a hex color code
-   * @param {Boolean} [useAlpha=1] - if alpha should be included in result
-   * @return {String} */
-  toString(useAlpha = 1) {
-    const toHex = (c) => ((c = (c * 255) | 0) < 16 ? '0' : '') + c.toString(16);
-    return '#' + toHex(this.r) + toHex(this.g) + toHex(this.b) + (useAlpha ? toHex(this.a) : '');
-  }
-
-  /** Set this color from a hex code
-   * @param {String} hex - html hex code
-   * @return {Color} */
-  setHex(hex) {
-    const fromHex = (c) => clamp(parseInt(hex.slice(c, c + 2), 16) / 255);
-    this.r = fromHex(1);
-    (this.g = fromHex(3)), (this.b = fromHex(5));
-    this.a = hex.length > 7 ? fromHex(7) : 1;
-    return this;
-  }
-
-  /** Returns this color expressed as 32 bit RGBA value
-   * @return {Number} */
-  rgbaInt() {
-    const toByte = (c) => (clamp(c) * 255) | 0;
-    const r = toByte(this.r);
-    const g = toByte(this.g) << 8;
-    const b = toByte(this.b) << 16;
-    const a = toByte(this.a) << 24;
-    return r + g + b + a;
-  }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -807,12 +564,6 @@ let gravity = 0;
  *  @memberof Settings */
 let inputWASDEmulateDirection = 1;
 
-/** Allow vibration hardware if it exists
- *  @type {Boolean}
- *  @default
- *  @memberof Settings */
-let vibrateEnable = 1;
-
 ///////////////////////////////////////////////////////////////////////////////
 // Audio settings
 
@@ -874,7 +625,6 @@ class EngineObject {
    *  @param {Number}  [tileIndex=-1]              - Tile to use to render object (-1 is untextured)
    *  @param {Vector2} [tileSize=1]  - Size of tile in source pixels
    *  @param {Number}  [angle=0]                   - Angle the object is rotated by
-   *  @param {Color}   [color=Color()]             - Color to apply to tile when rendered
    *  @param {Number}  [renderOrder=0]             - Objects sorted by renderOrder before being rendered
    */
   constructor(pos = vec2(), size = vec2(1), tileIndex = -1, tileSize = 1, angle = 0, color, renderOrder = 0) {
@@ -1193,14 +943,6 @@ function drawCanvas2D(pos, size, angle, mirror, drawFunction, context = mainCont
   drawFunction(context);
   context.restore();
 }
-
-/** Enable normal or additive blend mode
- *  @param {Boolean} [additive=0]
- *  @memberof Draw */
-function setBlendMode(additive) {
-  mainContext.globalCompositeOperation = additive ? 'lighter' : 'source-over';
-}
-
 // Fullscreen mode
 
 /** Returns true if fullscreen mode is active
@@ -1349,15 +1091,6 @@ const mouseToScreen = (mousePos) => {
     vec2(percent(mousePos.x, rect.left, rect.right), percent(mousePos.y, rect.top, rect.bottom))
   );
 };
-
-/** Pulse the vibration hardware if it exists
- *  @param {Number} [pattern=100] - a single value in miliseconds or vibration interval array
- *  @memberof Input */
-const vibrate = (pattern) => vibrateEnable && navigator && navigator.vibrate && navigator.vibrate(pattern);
-
-/** Cancel any ongoing vibration
- *  @memberof Input */
-const vibrateStop = () => vibrate(0);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Touch input
@@ -2123,26 +1856,6 @@ function engineObjectsDestroy() {
   engineObjects = engineObjects.filter((o) => !o.destroyed);
 }
 
-/** Triggers a callback for each object within a given area
- *  @param {Vector2} [pos]                 - Center of test area
- *  @param {Number} [size]                 - Radius of circle if float, rectangle size if Vector2
- *  @param {Function} [callbackFunction]   - Calls this function on every object that passes the test
- *  @param {Array} [objects=engineObjects] - List of objects to check
- *  @memberof Engine */
-function engineObjectsCallback(pos, size, callbackFunction, objects = engineObjects) {
-  if (!pos) {
-    // all objects
-    for (const o of objects) callbackFunction(o);
-  } else if (size.x != undefined) {
-    // bounding box test
-    for (const o of objects) isOverlapping(pos, size, o.pos, o.size) && callbackFunction(o);
-  } // circle test
-  else {
-    const sizeSquared = size * size;
-    for (const o of objects) pos.distanceSquared(o.pos) < sizeSquared && callbackFunction(o);
-  }
-}
-
 /**
  * LittleJS Module Export
  * <br> - Export engine as a module with extra functions where necessary
@@ -2225,11 +1938,6 @@ const setGravity = (g) => (gravity = g);
  *  @memberof Settings */
 const setInputWASDEmulateDirection = (enable) => (inputWASDEmulateDirection = enable);
 
-/** Set to allow vibration hardware if it exists
- *  @param {Boolean} enable
- *  @memberof Settings */
-const setVibrateEnable = (enable) => (vibrateEnable = enable);
-
 /** Set to disable all audio code
  *  @param {Boolean} enable
  *  @memberof Settings */
@@ -2267,7 +1975,6 @@ export {
   setObjectMaxSpeed,
   setGravity,
   setInputWASDEmulateDirection,
-  setVibrateEnable,
   setSoundEnable,
   setSoundVolume,
   setSoundDefaultRange,
@@ -2289,7 +1996,6 @@ export {
   cameraPos,
   cameraScale,
   inputWASDEmulateDirection,
-  vibrateEnable,
   soundEnable,
   soundVolume,
   soundDefaultRange,
@@ -2309,7 +2015,6 @@ export {
   percent,
   lerp,
   smoothStep,
-  nearestPowerOfTwo,
   isOverlapping,
   wave,
   formatTime,
@@ -2320,18 +2025,11 @@ export {
   randSign,
   randInCircle,
   randVector,
-  randColor,
-  randSeed,
-  setRandSeed,
-  randSeeded,
 
   // Utility Classes
   Vector2,
-  Color,
   Timer,
   vec2,
-  rgb,
-  hsl,
 
   // Base
   EngineObject,
@@ -2345,7 +2043,6 @@ export {
   screenToWorld,
   worldToScreen,
   drawCanvas2D,
-  setBlendMode,
   isFullscreen,
   toggleFullscreen,
 
@@ -2362,8 +2059,6 @@ export {
   mouseWheel,
   preventDefaultInput,
   mouseToScreen,
-  vibrate,
-  vibrateStop,
   isTouchDevice,
 
   // Audio
@@ -2391,9 +2086,8 @@ export {
   engineInit,
   engineObjectsUpdate,
   engineObjectsDestroy,
-  engineObjectsCallback,
 
-  // Custom stuff
+  // Custom john stuff
   getTimeSpeedScale,
   setTimeSpeedScale,
 };

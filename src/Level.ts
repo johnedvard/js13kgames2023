@@ -162,6 +162,7 @@ export class Level {
     this.currentWave = 0;
     this.currentSliceColorEllapseTime = 0;
     this.currentWaveEllapseTime = 0;
+    this.waveDuration = 7;
     emit('toslice', { colorToSlice: this.currentColorToSlice });
     this.music.stop();
     this.music.play();
@@ -203,28 +204,26 @@ export class Level {
     }
     // Add arrows for every 5 wave
     if (this.currentWave % 5 == 0) {
-      let speed = Math.max(-4, (this.currentWave / 5) * -1);
+      let speed = Math.max(-3.5, (this.currentWave / 5) * -1);
       for (let i = 0; i < 3; i++) {
-        this.arrows.push(
-          new Arrow(vec2(i * 10 + Math.random() * 900, -300 + i * (Math.random() * 20)), vec2(0, speed))
-        );
+        const x = i * 10 + Math.random() * (canvasFixedSize.x - 300);
+        const y = -300 + i * (Math.random() * 20);
+        this.arrows.push(new Arrow(vec2(x, y), vec2(0, speed)));
       }
     }
     if (this.currentWave == 6) {
       this.spawnLanterns();
       this.spawnBamboos();
       this.waveDuration = 6;
-      this.sliceColorMaxLifeTime = 6;
     }
     if (this.currentWave == 7 || this.currentWave == 8) {
       this.spawnBamboos();
     }
     if (this.currentWave >= 10) {
       this.waveDuration = 5;
-      this.sliceColorMaxLifeTime = 5;
       if (this.currentWave % 2 == 0) {
         const sliceColor = this.getRandomSliceColor();
-        let x = 70 + Math.floor(100 + Math.random() * (canvasFixedSize.x - 200));
+        let x = 70 + Math.floor(100 + Math.random() * (canvasFixedSize.x - 300));
         const bamboo = new MySvg(bambooPath, null, sliceColor, getColorFromSliceColor(sliceColor));
         bamboo.setScale(2);
         bamboo.translateSvg(vec2(x, -200));
@@ -237,10 +236,6 @@ export class Level {
         this.spawnBamboos();
       }
     }
-    if (this.currentWave >= 20) {
-      this.sliceColorMaxLifeTime = 4;
-      this.waveDuration = 4;
-    }
   };
 
   spawnBamboos() {
@@ -248,7 +243,7 @@ export class Level {
       let sliceColor = this.getRandomSliceColor();
       setTimeout(
         (sliceColor) => {
-          let x = 70 + Math.floor(100 + Math.random() * (canvasFixedSize.x - 200));
+          let x = 70 + Math.random() * (canvasFixedSize.x - 300);
           const bamboo = new MySvg(bambooPath, null, sliceColor, getColorFromSliceColor(sliceColor));
           bamboo.setScale(1.25);
           bamboo.translateSvg(vec2(x, -200));
