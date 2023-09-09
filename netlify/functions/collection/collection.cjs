@@ -2,6 +2,12 @@
 
 const fetch = require('node-fetch');
 
+const headers = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
+};
+
 const handler = async function (event, context) {
   try {
     const response = await fetch(
@@ -15,6 +21,7 @@ const handler = async function (event, context) {
 
     return {
       statusCode: 200,
+      headers,
       body: JSON.stringify({ data: data.data }),
     };
   } catch (error) {
@@ -22,6 +29,7 @@ const handler = async function (event, context) {
     console.log(error);
     return {
       statusCode: 500,
+      headers,
       // Could be a custom message or object i.e. JSON.stringify(err)
       body: JSON.stringify({ msg: error.message }),
     };

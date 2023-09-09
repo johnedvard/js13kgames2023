@@ -83,10 +83,13 @@ export function buyNftSword(sword: SwordDataType) {
   nearConnection.nftBuy(sword);
 }
 export function login() {
-  if (!nearConnection) return;
+  if (!nearConnection) return false;
   if (!nearConnection.isSignedIn()) return nearConnection.login();
 }
 
+export function hasNearConection() {
+  return !!nearConnection;
+}
 export function isLoggedIn() {
   if (!nearConnection) return false;
   return nearConnection.isSignedIn();
@@ -94,7 +97,6 @@ export function isLoggedIn() {
 
 function getParasNftCollection(): Promise<INftCollection[]> {
   let api = PARAS_COLLECTION_API;
-  console.log('hoistname', window.location.hostname);
   if (window.location.hostname.match('localhost')) api = '/api';
   return fetch(api)
     .then((res) => res.json())

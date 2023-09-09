@@ -110,7 +110,6 @@ export class SceneManager {
     on('tick', onTick);
   }
   onKilled = (_customEvent: CustomEvent) => {
-    console.log('_customEvent', _customEvent.detail.data.msg);
     if (this.isChangingScenes || this.isOnKillProcedure) return;
     this.startOnKilledProcedure();
   };

@@ -27,6 +27,7 @@ import {
   getLightSaber,
   getNftCollection,
   getNftTokensForOwner,
+  hasNearConection,
   initNear,
   isLoggedIn,
   isOwned,
@@ -118,8 +119,9 @@ export class Web3Scene {
     this.loginBtn.forEach((svg) => {
       if (this.isEventInProgress) return;
       if (svg == other) {
-        this.isEventInProgress = true;
-        login();
+        if (login() != false) {
+          this.isEventInProgress = true;
+        }
       }
     });
     this.equipLightSaberBtn.forEach((svg) => {
@@ -137,11 +139,13 @@ export class Web3Scene {
     this.buyLightSaberBtn.forEach((svg) => {
       if (this.isEventInProgress) return;
       if (svg == other) {
-        this.isEventInProgress = true;
         if (isLoggedIn()) {
           buyNftSword(lightSaberData);
+          this.isEventInProgress = true;
         } else {
-          login();
+          if (login() != false) {
+            this.isEventInProgress = true;
+          }
         }
       }
     });
@@ -159,8 +163,7 @@ export class Web3Scene {
   };
 
   async initWeapons() {
-    const [nftCollection] = await Promise.all([getNftCollection()]);
-    console.log('nftCollection', nftCollection);
+    await Promise.all([getNftCollection()]);
     this.lightSaber = getLightSaber();
     this.haloSaber = getHaloSaber();
     this.lightSaber = new LightSaber(this.lightSaber.collection);
@@ -175,7 +178,7 @@ export class Web3Scene {
         s.update();
         handleSvgCollisions(s, 1);
       });
-    } else {
+    } else if (hasNearConection()) {
       this.buyLightSaberBtn.forEach((s) => {
         s.update();
         handleSvgCollisions(s, 1);
@@ -186,7 +189,7 @@ export class Web3Scene {
         s.update();
         handleSvgCollisions(s, 1);
       });
-    } else {
+    } else if (hasNearConection()) {
       this.buyHaloSaberBtn.forEach((s) => {
         s.update();
         handleSvgCollisions(s, 1);
@@ -197,7 +200,7 @@ export class Web3Scene {
       s.update();
       handleSvgCollisions(s, 2);
     });
-    if (!isLoggedIn()) {
+    if (hasNearConection() && !isLoggedIn()) {
       this.loginBtn.forEach((s) => {
         s.update();
         handleSvgCollisions(s, 1);
@@ -276,8 +279,7 @@ export class Web3Scene {
     this.isEventInProgress = false;
     initNear().then(async () => {
       if (isLoggedIn()) {
-        const tokensOwned = await getNftTokensForOwner();
-        console.log('tokensOwned', tokensOwned);
+        await getNftTokensForOwner();
       }
     });
     setIsUseSelectedColor(true);

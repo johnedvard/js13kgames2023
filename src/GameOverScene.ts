@@ -81,7 +81,6 @@ export class GameOverScene {
     ctx.fillText(`Highscore: ${score}`, canvasFixedSize.x / 2, 200);
   }
   start() {
-    console.log('start game over');
     this.isEventInProgress = false;
     this.playButton.length = 0;
     this.web3Button.length = 0;
