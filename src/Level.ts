@@ -94,10 +94,7 @@ export class Level {
       s.update();
       handleSvgCollisions(s);
     });
-
-    if (this.music.isPlaying()) {
-      this.ellapsedPlayTime += timeDelta;
-    }
+    this.ellapsedPlayTime += timeDelta;
     if (this.helm) {
       this.helm.update();
       handleSvgCollisions(this.helm);
@@ -203,6 +200,7 @@ export class Level {
     this.lanterns.length = 0;
     this.bamboos.length = 0;
     this.arrows.length = 0;
+
     // start first wave
     for (let i = 0; i < 2; i++) {
       this.lanterns.push(new Lantern(vec2(i * 146, canvasFixedSize.y - 100), 'r'));
