@@ -1,4 +1,4 @@
-import { vec2, canvasFixedSize, Music, timeDelta } from './littlejs';
+import { vec2, canvasFixedSize, Music, timeDelta, rand } from './littlejs';
 
 import { Arrow } from './Arrow';
 import { Lantern } from './Lantern';
@@ -8,7 +8,7 @@ import { blue, red } from './colors';
 import { smoothstep } from './smoothstep';
 import { emit, on } from './gameEvents';
 import { getColorFromSliceColor } from './colorUtils';
-import { bambooPath } from './svgPaths';
+import { bambooPath, mongolHemlMainPath, mongolHemlTopPath } from './svgPaths';
 import { handleSvgCollisions } from './handleSvgCollisions';
 import { SceneManager } from './SceneManager';
 import { addScore, setCurrentScore } from './scoreUtils';
@@ -29,11 +29,48 @@ export class Level {
   currentSliceColorEllapseTime = 0;
   waveDuration = 7;
   currentWaveEllapseTime = 0;
+  helm: MySvg;
+  helmTop: MySvg;
 
   constructor(private sceneManager: SceneManager) {
     this.music = sceneManager.levelMusic;
     on('split', this.onSplit);
     on('wave', this.onNewWave);
+  }
+
+  createHelm(sliceColor: ColorToSliceType) {
+    const randomDirection = Math.random() * 300;
+    const speed = vec2(rand(0.5, 1.5) * -1, 0);
+    let helmX = -350;
+    if (randomDirection >= 150) {
+      helmX = canvasFixedSize.x + 350;
+      speed.x *= -1;
+    }
+
+    const helmY = rand(canvasFixedSize.y / 2 + 300, canvasFixedSize.y / 2 - 300);
+
+    this.helm = new MySvg(
+      mongolHemlMainPath,
+      null,
+      sliceColor,
+      getColorFromSliceColor(sliceColor),
+      vec2(helmX, helmY),
+      speed,
+      vec2(0, 0),
+      0
+    );
+    this.helmTop = new MySvg(
+      mongolHemlTopPath,
+      null,
+      sliceColor,
+      getColorFromSliceColor(sliceColor),
+      vec2(helmX + 50, helmY - 40),
+      speed,
+      vec2(0, 0),
+      0
+    );
+    this.helm.gameObjectType = 'h';
+    this.helmTop.gameObjectType = 'ht';
   }
   onSplit = (evt) => {
     if (this.sceneManager.currentScene != 'l') return;
@@ -61,6 +98,15 @@ export class Level {
     if (this.music.isPlaying()) {
       this.ellapsedPlayTime += timeDelta;
     }
+    if (this.helm) {
+      this.helm.update();
+      handleSvgCollisions(this.helm);
+    }
+    if (this.helmTop) {
+      this.helmTop.update();
+      handleSvgCollisions(this.helmTop);
+    }
+
     this.updateColorToSlice();
     this.handleWaves();
   }
@@ -68,6 +114,9 @@ export class Level {
     this.arrows.forEach((s) => s.render(ctx));
     this.lanterns.forEach((s) => s.render(ctx));
     this.bamboos.forEach((s) => s.render(ctx));
+
+    if (this.helm) this.helm.render(ctx);
+    if (this.helmTop) this.helmTop.render(ctx);
 
     this.renderTutorial(ctx);
 
@@ -110,7 +159,7 @@ export class Level {
     // animate next color coming
     ctx.beginPath();
     ctx.fillStyle = getColorFromSliceColor(this.nextColorToSlice);
-    const distance = this.ellapsedPlayTime % this.sliceColorMaxLifeTime;
+    const distance = this.currentSliceColorEllapseTime;
     const travelled = smoothstep(0, canvasFixedSize.x / 2, distance / this.sliceColorMaxLifeTime);
     centerPos = vec2(canvasFixedSize.x - travelled, 50);
     outerRadius = 1;
@@ -163,6 +212,7 @@ export class Level {
     this.currentSliceColorEllapseTime = 0;
     this.currentWaveEllapseTime = 0;
     this.waveDuration = 7;
+    this.sliceColorMaxLifeTime = 7;
     emit('toslice', { colorToSlice: this.currentColorToSlice });
     this.music.stop();
     this.music.play();
@@ -194,8 +244,8 @@ export class Level {
     if (this.currentWave == 3 || this.currentWave == 4) {
       for (let i = 0; i < 2; i++) {
         const sliceColor = i ? 'r' : 'b';
-        let x = 70 + Math.floor(Math.random() * (canvasFixedSize.x / 2 - 70));
-        if (i) x = 70 + canvasFixedSize.x / 2 + Math.floor(Math.random() * (canvasFixedSize.x / 2 - 70));
+        let x = 70 + Math.random() * (canvasFixedSize.x / 2 - 140);
+        if (i) x = 70 + canvasFixedSize.x / 2 + Math.random() * (canvasFixedSize.x / 2 - 200);
         const bamboo = new MySvg(bambooPath, null, sliceColor, getColorFromSliceColor(sliceColor));
         bamboo.setScale(2);
         bamboo.translateSvg(vec2(x, -300));
@@ -206,7 +256,7 @@ export class Level {
     if (this.currentWave % 5 == 0) {
       let speed = Math.max(-3.5, (this.currentWave / 5) * -1);
       for (let i = 0; i < 3; i++) {
-        const x = i * 10 + Math.random() * (canvasFixedSize.x - 300);
+        const x = 200 + i * 210 + Math.random() * 70;
         const y = -300 + i * (Math.random() * 20);
         this.arrows.push(new Arrow(vec2(x, y), vec2(0, speed)));
       }
@@ -216,34 +266,51 @@ export class Level {
       this.spawnBamboos();
       this.waveDuration = 6;
     }
-    if (this.currentWave == 7 || this.currentWave == 8) {
-      this.spawnBamboos();
-    }
-    if (this.currentWave >= 10) {
+    if (this.currentWave >= 7) {
       this.waveDuration = 5;
       if (this.currentWave % 2 == 0) {
         const sliceColor = this.getRandomSliceColor();
-        let x = 70 + Math.floor(100 + Math.random() * (canvasFixedSize.x - 300));
+        let x = 70 + Math.random() * (canvasFixedSize.x - 200);
         const bamboo = new MySvg(bambooPath, null, sliceColor, getColorFromSliceColor(sliceColor));
         bamboo.setScale(2);
         bamboo.translateSvg(vec2(x, -200));
         this.bamboos.push(bamboo);
       }
-      if (this.currentWave % 4 == 0) {
-        this.spawnLanterns();
-      }
       if (this.currentWave % 3 == 0) {
-        this.spawnBamboos();
+        this.spawnLanterns();
+        this.createHelm(this.currentColorToSlice);
       }
+      if ((this.currentWave + 1) % 4 == 0) {
+        if (this.currentWave >= 15) {
+          this.spawnBamboos(5);
+        } else {
+          this.spawnBamboos(4);
+        }
+      }
+    }
+    if (this.currentWave == 15) {
+      this.sliceColorMaxLifeTime = 4;
+    }
+    if (this.currentWave == 25) {
+      this.sliceColorMaxLifeTime = 3;
+    }
+    if (this.currentWave == 35) {
+      this.sliceColorMaxLifeTime = 2;
+    }
+    if (this.currentWave == 50) {
+      this.sliceColorMaxLifeTime = 1.5;
+    }
+    if (this.currentWave == 75) {
+      this.sliceColorMaxLifeTime = 1;
     }
   };
 
-  spawnBamboos() {
-    for (let i = 0; i < 5; i++) {
+  spawnBamboos(num = 4) {
+    for (let i = 0; i < num; i++) {
       let sliceColor = this.getRandomSliceColor();
       setTimeout(
         (sliceColor) => {
-          let x = 70 + Math.random() * (canvasFixedSize.x - 300);
+          let x = 70 + i * 150 + Math.random() * 50;
           const bamboo = new MySvg(bambooPath, null, sliceColor, getColorFromSliceColor(sliceColor));
           bamboo.setScale(1.25);
           bamboo.translateSvg(vec2(x, -200));
@@ -257,14 +324,11 @@ export class Level {
 
   spawnLanterns() {
     for (let i = 0; i < 4; i++) {
-      const lantern = new Lantern(
-        vec2(50 + Math.random() * (canvasFixedSize.x - 100), canvasFixedSize.y),
-        this.getRandomSliceColor()
-      );
-      if (lantern.pos.x >= canvasFixedSize.x / 2 - 200) {
-        lantern.velocity = vec2(-0.5, 0);
+      const lantern = new Lantern(vec2(50 + i * 220, canvasFixedSize.y), this.getRandomSliceColor());
+      if (lantern.centerPos.x >= canvasFixedSize.x / 2 + 200) {
+        lantern.velocity = vec2(rand(0.2, 1) * -1, rand(0, 0.2));
       } else {
-        lantern.velocity = vec2(0.5, 0);
+        lantern.velocity = vec2(rand(0.2, 1), rand(0, 0.2));
       }
       lantern.shouldRotate = true;
       this.lanterns.push(lantern);
@@ -274,7 +338,7 @@ export class Level {
   removeUnusedObjects() {
     for (let i = this.bamboos.length - 1; i >= 0; i--) {
       const svg = this.bamboos[i];
-      if (Math.abs(svg.pos.y) >= canvasFixedSize.y + 1000 || (svg.isCut() && svg.killedTime >= 5)) {
+      if (Math.abs(svg.pos.y) > canvasFixedSize.y + 1000 || (svg.isCut() && svg.killedTime >= 5)) {
         this.bamboos.splice(i, 1);
       }
     }
@@ -289,9 +353,15 @@ export class Level {
     }
     for (let i = this.arrows.length - 1; i >= 0; i--) {
       const arrow = this.arrows[i];
-      if (Math.abs(arrow.getPos().y) >= canvasFixedSize.y + 1000 || (arrow.isCut() && arrow.killedTime >= 5)) {
+      if (Math.abs(arrow.getPos().y) > canvasFixedSize.y + 1000 || (arrow.isCut() && arrow.killedTime >= 5)) {
         this.arrows.splice(i, 1);
       }
+    }
+    if (this.helm && (Math.abs(this.helm.pos.x) > canvasFixedSize.x + 2000 || this.helm.killedTime >= 5)) {
+      this.helm = null;
+    }
+    if (this.helmTop && (Math.abs(this.helmTop.pos.x) > canvasFixedSize.x + 2000 || this.helmTop.killedTime >= 5)) {
+      this.helmTop = null;
     }
   }
 

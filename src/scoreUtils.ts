@@ -40,6 +40,12 @@ export function addScore(svg: MySvg, point: vec2) {
     case 'l':
       score = 15;
       break;
+    case 'h':
+      score = 20;
+      break;
+    case 'ht':
+      score = 25;
+      break;
     default:
       score = 10;
   }
